@@ -1,0 +1,53 @@
+
+====================================================================================================================
+
+
+TIP 1:      GRESKA PRILIKOM GENERISANJA KODA -> KONFLIKTI
+
+Problem:    U fazi sam gde radim na generisanju koda, i poceo je da mi se javlja
+            ogroman broj konflikata, tamo gde sam resio "dangling else" problem.
+            Viseci "else" problem je resen isto kao u video tutorijalima, samo sto
+            sam jos morao to da dodam i na "while" iskaz, koji takodje moze biti
+            "matched" ili "unmatched".
+            Problem je sto kad ubacim akcije koje generisu kod za uslovni skok (i
+            kod while, i kod if/else), javljaju se novi konflikti, gde Cup ne zna
+            koju akciju da izvrsi (iako su akcije identicne u Matched i Unmatched
+            smenama).
+
+Solution:   ako se akcija doda u sred smene,
+            onda cup automatski na tom mestu stavi praznu smenu, na primer:
+
+            <x> -> y {a} z
+            <x> -> y {a} z w
+            se pretvara u <x> -> y <$1> z
+                          <$1> -> {a}
+                          <x> -> y <$2> z w
+                          <$2> -> {a}
+            i eto ga reduce/reduce konflikt 2. i 4. smene iako u originalnoj
+            gramatici nije bilo konflikata.
+
+            Ovo se desava jer parser normalno moze da aktivira akcije jedino kada su na
+            krajevima smena.
+            Resenje je u izvlacenju zajednickog pocetka dve smene do akcije u posebnu smenu:
+            <x> -> <y> z
+            <x> -> <y> z w
+            <y> -> y {a}
+
+
+====================================================================================================================
+ TIP 2:
+
+ Problem:
+
+ Solution:
+
+====================================================================================================================
+
+
+====================================================================================================================
+
+
+====================================================================================================================
+
+
+====================================================================================================================
