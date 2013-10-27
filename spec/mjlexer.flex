@@ -5,6 +5,8 @@ import java_cup.runtime.Symbol;
 %%
 
 %{
+    // Buffer za stringove
+    StringBuffer stBuffer = new StringBuffer();
 
 	// ukljucivanje informacije o poziciji tokena
 	private Symbol new_symbol(int type) {
@@ -23,6 +25,7 @@ import java_cup.runtime.Symbol;
 %column
 
 %xstate COMMENT
+%xstate STRING
 
 %eofval{
 	return new_symbol(sym.EOF);
@@ -84,6 +87,21 @@ import java_cup.runtime.Symbol;
 "//" 		     { yybegin(COMMENT); }
 <COMMENT> .      { yybegin(COMMENT); }
 <COMMENT> "\r\n" { yybegin(YYINITIAL); }
+
+
+\" { stBuffer.setLength(0); yybegin(STRING); }
+<STRING> {
+    \" {    yybegin(YYINITIAL);
+            return new_symbol(sym.STRING_LITERAL, stBuffer.toString());
+       }
+    [^\n\r\"\\]+ { stBuffer.append( yytext() ); }
+    \\t          { stBuffer.append('\t'); }
+    \\n          { stBuffer.append('\n'); }
+
+    \\r          { stBuffer.append('\r'); }
+    \\\"         { stBuffer.append('\"'); }
+    \\           { stBuffer.append('\\'); }
+}
 
 [0-9]+  { return new_symbol(sym.NUMBER, new Integer (yytext())); }
 ([a-z]|[A-Z])[a-z|A-Z|0-9|_]* 	{return new_symbol (sym.IDENT, yytext()); }

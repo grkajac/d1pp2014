@@ -42,7 +42,12 @@ Solution:   ako se akcija doda u sred smene,
  Solution:
 
 ====================================================================================================================
+ TIP 3:
 
+ Problem: stringovi
+
+ Solution:     // http://compilers.iecc.com/comparch/article/07-02-021
+               // http://jflex.de/manual.html
 
 ====================================================================================================================
 

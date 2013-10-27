@@ -3,6 +3,8 @@ program ProgramOK
     const int pi = 3, e = 2;
     char a, b;
     const char c = 'c';
+    // THIS IS COMMENT
+    string a = " This is string and it is 'good' string :-) ";
 {
 
     int fja(int aa, char bb) int cc, dd{
