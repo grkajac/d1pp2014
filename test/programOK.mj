@@ -3,6 +3,7 @@ program ProgramOK
     const int pi = 3, e = 2;
     char a, b;
     const char c = 'c';
+    bool buli = true, fali = false;
     // THIS IS COMMENT
     string a = " This is string and it is 'good' string :-) ";
 {

@@ -50,6 +50,7 @@ public class sym {
   public static final int IDENT = 38;
   public static final int CHARCONST = 37;
   public static final int STRING_LITERAL = 43;
+  public static final int BOOLVAL = 45;
   public static final int EOF = 0;
   public static final int error = 1;
 }
