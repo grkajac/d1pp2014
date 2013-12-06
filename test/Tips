@@ -50,6 +50,7 @@ Solution:   ako se akcija doda u sred smene,
                // http://jflex.de/manual.html
 
 ====================================================================================================================
+   Proveri SEMI za Class <--> VarDecl zbog oporavka od greske u GlobalDeclPart
 
 
 ====================================================================================================================

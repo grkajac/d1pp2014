@@ -42,7 +42,6 @@ import java_cup.runtime.Symbol;
 "break"     {return new_symbol(sym.BREAK, yytext());}
 "class"     {return new_symbol(sym.CLASS, yytext());}
 "else"      {return new_symbol(sym.ELSE, yytext());}
-"final"     {return new_symbol(sym.FINAL, yytext());}
 "if"        {return new_symbol(sym.IF, yytext());}
 "new"       {return new_symbol(sym.NEW, yytext());}
 "print"     {return new_symbol(sym.PRINT, yytext());}
@@ -50,6 +49,7 @@ import java_cup.runtime.Symbol;
 "return"    {return new_symbol(sym.RETURN, yytext());}
 "void" 	    {return new_symbol(sym.VOID, yytext());}
 "while"     {return new_symbol(sym.WHILE, yytext());}
+"do"        {return new_symbol(sym.DO, yytext());}
 "extends"   {return new_symbol(sym.EXTENDS, yytext());}
 
 "program"   { return new_symbol(sym.PROG, yytext()); }
@@ -72,6 +72,9 @@ import java_cup.runtime.Symbol;
 "="	    {return new_symbol(sym.EQUAL, yytext());}
 "++"    {return new_symbol(sym.INCREMENT, yytext());}
 "--"	{return new_symbol(sym.DECREMENT, yytext()); }
+
+"||"	{return new_symbol(sym.OR, yytext()); }
+"&&"	{return new_symbol(sym.AND, yytext()); }
 
 
 ";"	{return new_symbol(sym.SEMI, yytext());}

@@ -1,0 +1,588 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+
+// import java.io.*;
+import rs.etf.pp1.symboltable.Tab;
+import rs.etf.pp1.symboltable.concepts.*;
+
+
+parser code {:
+
+    boolean conditionError = false;
+    boolean inGlobalScope = true;
+
+	// counting declarations vars
+	int globalPrimitiveVarsCount = 0;
+	int globalArraysCount = 0;
+
+    // counting definitions vars
+	int functionsInMainCount = 0;
+	int innerClassesCount = 0;
+
+    //
+	int statementsCount = 0;
+	int functionCallsInMainCount = 0;
+	int objectCreationCount = 0;
+
+	// inner classes vars
+	int innerClassAttributesCount = 0;
+	int innerClassMethodsCount = 0;
+	int extendingClassesCount = 0;
+
+
+	// error detection var
+	boolean errorDetected = false;
+
+	Logger log = Logger.getLogger(getClass());
+
+
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	errorDetected = true;
+    	StringBuilder msg = new StringBuilder(message);
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+
+    public void report_info(String message, Object info) {
+    	StringBuilder msg = new StringBuilder(message);
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.info(msg.toString());
+    }
+
+:}
+
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null)
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+
+init with {:
+	// Tab.init(); // Universe scope
+:}
+
+action code {:
+	/*
+	Obj currentMethod = null;
+    Struct currentVarType = Tab.noType;
+
+	boolean returnFound = false;
+    boolean isVoid = false;
+    boolean isMainMeth = false;
+
+    int paramCount = 0;
+    boolean isField = false;
+	boolean isOne = true;
+
+    int redniBrParam = 0;
+    boolean inMain = false;
+    boolean inGlobal = true;
+    boolean inInnerClass = false;
+
+    Struct returnType;
+    */
+:}
+
+terminal PROG, CONST, VOID, CLASS, EXTENDS, NEW;
+terminal IF, ELSE, WHILE, DO, PRINT, READ, BREAK, RETURN;
+terminal PLUS, MINUS, TIMES, DIV, MOD;
+terminal ISEQUAL, ISNOTEQUAL, ISGREATER, ISGREATEREQ, ISLESS, ISLESSEQ;
+terminal OR, AND;
+terminal EQUAL, INCREMENT, DECREMENT;
+terminal LBRACE, RBRACE, RSQUARE, LSQUARE, LPAREN, RPAREN, DOT, COMMA, SEMI;
+
+terminal Integer NUMBER ;
+terminal Boolean BOOLVAL ;
+terminal Character CHARCONST ;
+terminal String STRING_LITERAL ;
+terminal String IDENT ;
+
+non terminal Program, GlobalDeclaration, GlobalDeclList, GlobalDeclPart, GlobalVars;
+non terminal ConstDecl,ConstDeclList, ConstDeclPart;
+non terminal VarDecl, VarList, VarPart;
+non terminal ClassDecl, ClassExtends;
+non terminal ClassVarDecl, ClassVarList, ClassVarPart;
+non terminal ClassMethodDecl, ClassMethodList, ClassMethodPart;
+non terminal MethodDecl, MethodDeclList, MethodDeclPart, MethodRetType;
+non terminal MethodVarDecl, MethodVarDeclList, MethodVarDeclPart;
+non terminal FormPars, FormalParamDecl, ActualPars, ActualParamList;
+non terminal AllStatements, StatementList, Statement;
+non terminal Unmatched, Matched;
+non terminal ExprInSquares;
+non terminal DesignatorList, DesignatorPart;
+
+non terminal Condition, CondTermOR, CondTerm, CondFactAND, CondFact ;
+non terminal Addop, Mulop, Relop;
+
+non terminal Obj ProgBegin, Designator, MethodName;
+non terminal Struct Type, Term, Term_list, Expr, Factor, Factor_list;
+
+non terminal Integer Brace_condition;
+non terminal Struct dodela;
+
+Program ::= PROG ProgBegin GlobalDeclaration LBRACE MethodDecl RBRACE
+            {:
+
+            :}
+            |
+            PROG ProgBegin GlobalDeclaration LBRACE  RBRACE
+            {:
+
+            :};
+
+ProgBegin ::=  IDENT:id
+                {:
+                  // add prog name in symbol table, open scope, ...
+                :};
+
+GlobalDeclaration ::=  GlobalDeclList
+                        |
+                       /* epsilon */;
+
+GlobalDeclList ::= GlobalDeclList GlobalDeclPart
+				   |
+				   GlobalDeclPart ;
+
+GlobalVars ::=  ConstDecl SEMI
+                |
+                VarDecl SEMI
+                |
+                error SEMI:l
+                 {:
+                     parser.log.debug("Izvrsen oporavak do ; u liniji "+lleft+" prilikom definicije glob. prom. ili konstante");
+                 :};
+
+GlobalDeclPart ::=  GlobalVars
+                    |
+                    ClassDecl;
+
+
+Type ::= IDENT:typeName
+         {:
+
+        :};
+
+
+ConstDecl ::= CONST Type:tip
+                {:
+
+                :}
+                ConstDeclList;
+
+ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
+                     |
+                  ConstDeclPart
+                     |
+                  error COMMA:l
+                   {:
+                      parser.log.debug("Izvrsen oporavak do , u liniji "+lleft+" prilikom definicije glob. prom. ili konstante");
+                   :};
+
+ConstDeclPart ::= IDENT:id EQUAL NUMBER:num
+                    {:
+
+                    :}
+                  |
+                  IDENT:id EQUAL CHARCONST:ch
+                    {:
+
+                    :}
+                  |
+                  IDENT:id EQUAL BOOLVAL:bool
+                    {:
+
+                    :}
+                  |
+                  IDENT:id EQUAL STRING_LITERAL:str
+                    {:
+
+                    :};
+
+VarDecl ::= Type:typeName
+                {:
+
+                :}
+                VarList;
+
+VarList ::= VarList COMMA VarPart
+            |
+            VarPart
+            |
+            error COMMA:l
+             {:
+                parser.log.debug("Izvrsen oporavak do , u liniji "+lleft+" prilikom definicije glob. prom. ili konstante");
+             :};
+
+VarPart ::= IDENT:id
+                {:
+
+                :}
+            |
+            IDENT:id LSQUARE RSQUARE
+                {:
+
+                :};
+
+
+
+
+
+MethodDecl ::= MethodDeclList;
+
+MethodDeclList ::= MethodDeclList MethodDeclPart
+                    |
+                   MethodDeclPart;
+
+MethodRetType ::= Type:retType
+                    {:
+
+                    :}
+                  |
+                  VOID
+                    {:
+                         //isVoid = true;
+                    :};
+
+MethodName ::= MethodRetType:retType IDENT:methName
+                {:
+                  //  parser.report_info("Obradjuje se funkcija " + methName.getName() + " na liniji " + methNameleft, null);
+                :};
+
+MethodDeclPart ::= MethodName:methName LPAREN FormPars RPAREN MethodVarDecl LBRACE AllStatements RBRACE
+                     {:
+
+                     :};
+
+
+FormPars ::= FormPars COMMA FormalParamDecl
+					|
+			 FormalParamDecl ;
+
+FormalParamDecl ::= Type:typeName
+                      {:
+                          // currentVarType = typeName;
+                      :}
+                    VarPart;
+
+MethodVarDecl ::=  MethodVarDeclList
+                    |
+                   /* epsilon */;
+
+MethodVarDeclList ::= MethodVarDeclList MethodVarDeclPart
+                        |
+                      MethodVarDeclPart;
+
+MethodVarDeclPart ::= VarDecl;
+
+
+
+
+
+ClassDecl ::= CLASS ClassExtends LBRACE ClassVarDecl ClassMethodDecl RBRACE;
+
+ClassExtends ::= Type:baseClass EXTENDS Type:superClass
+                    |
+                 Type:baseClass
+                    |
+                  /* epsilon */;
+
+ClassVarDecl ::= ClassVarList
+                    |
+                  /* epsilon */;
+
+ClassVarList ::= ClassVarList ClassVarPart
+                  |
+                 ClassVarPart;
+
+ClassVarPart ::= VarDecl SEMI
+                  |
+                 error SEMI:l
+                  {:
+                      parser.log.debug("Izvrsen oporavak do ; u liniji "+lleft+" prilikom definicije atributa klase");
+                  :};
+
+ClassMethodDecl ::=  LBRACE ClassMethodList  RBRACE
+                        |
+                     /* epsilon */;
+
+ClassMethodList ::= ClassMethodList ClassMethodPart
+                        |
+                    ClassMethodPart;
+
+ClassMethodPart ::= MethodDeclPart;
+
+
+
+
+
+
+
+AllStatements ::= StatementList
+                        |
+                     /* epsilon */;
+
+StatementList ::= StatementList Statement
+				  |
+				  Statement;
+
+Statement ::= Matched | Unmatched ;
+
+Unmatched ::= IF Brace_condition:cond Statement
+                {:
+
+                :}
+                |
+              IF Brace_condition:cond Matched ELSE Unmatched
+                {:
+                :}
+                |
+              WHILE Brace_condition:cond Unmatched
+                {:
+                :};
+
+
+
+Brace_condition ::= LPAREN Condition:c RPAREN
+                        {:
+                           // RESULT = c;
+                        :}
+                        |
+                    error RPAREN:l
+                        {:
+                            /*
+                            parser.report_error("Izvrsen oporavak do ) u liniji "+lleft,null);
+                            parser.conditionError = true;
+                            */
+                        :};
+
+dodela ::= 	Expr:e SEMI
+		{:
+		    /*
+		    if (parser.isInMain() && !parser.indeksGreska()) parser.incIskaza ();
+ 			parser.resetIndeksGreska ();
+
+			RESULT = e;
+			*/
+		:}
+		|
+		error SEMI:l
+		{:
+		    /*
+		    parser.report_error("Sintaksna greska prilikom dodele vrednosti izvrsen oporavak do ; u liniji "+lleft,null);
+			RESULT = Tab.noType;
+			*/
+		:} ;
+
+
+Matched ::= Designator:dest EQUAL dodela:d
+                {:
+                :}
+               |
+            Designator:dest INCREMENT SEMI
+                {:
+                :}
+               |
+            Designator:dest DECREMENT SEMI
+                {:
+                :}
+              |
+            Designator:dest LPAREN ActualPars RPAREN SEMI
+                {:
+                :}
+              |
+            WHILE Brace_condition:cond Matched
+                {:
+                :}
+               |
+            READ LPAREN Designator RPAREN SEMI
+               |
+            PRINT LPAREN Expr RPAREN SEMI
+                {:
+
+                :}
+              |
+            PRINT LPAREN Expr COMMA NUMBER RPAREN SEMI
+                {:
+
+                :}
+               |
+            RETURN Expr:t SEMI
+                {:
+                    //returnFound = true;
+                :}
+               |
+            RETURN SEMI
+               |
+            BREAK SEMI
+               |
+            LBRACE AllStatements RBRACE
+               |
+            DO LBRACE AllStatements RBRACE WHILE Brace_condition SEMI;
+
+
+Condition ::= CondTermOR;
+
+CondTermOR ::= CondTermOR OR CondTerm
+                |
+               CondTerm;
+
+CondTerm ::= CondFactAND;
+
+CondFactAND ::= CondFactAND AND CondFact
+              |
+             CondFact;
+
+CondFact ::= Expr:exp1 Relop Expr:exp2
+                {:
+                :}
+             |
+             Expr:exp1
+                {:
+                :}
+             ;
+
+
+Expr ::= Term_list:tl
+             {:
+                // RESULT = tl;
+             :}
+         |
+         MINUS Term_list:tl
+             {:
+             :};
+
+Term_list ::= Term_list:t Addop Term:r
+             {:
+             :}
+           |
+           Term:trm
+            {:
+            :};
+
+Term ::= Factor_list:fl
+         {:
+             RESULT = fl;
+         :};
+
+Factor_list ::= Factor_list:fl Mulop Factor:ff
+                {:
+                 :}
+              |
+             Factor:f
+                 {:
+                 :};
+
+Factor ::= NUMBER
+        {:
+
+        :}
+        |
+       CHARCONST
+         {:
+
+         :}
+        |
+        LPAREN Expr RPAREN
+         {:
+
+         :}
+         |
+       BOOLVAL
+         {:
+
+         :}
+         |
+       STRING_LITERAL
+         {:
+
+         :}
+         |
+       NEW Type:id ExprInSquares
+         {:
+
+         :}
+         |
+       NEW Type:id
+         {:
+
+         :}
+         |
+       Designator:d
+         {:
+
+         :}
+         |
+       Designator:d LPAREN ActualPars RPAREN
+         {:
+
+         :};
+
+
+ExprInSquares ::= LSQUARE Expr RSQUARE;
+
+ActualPars ::= ActualParamList
+				|
+			   /* epsilon */  ;
+
+ActualParamList ::= ActualParamList COMMA Expr
+					|
+					Expr ;
+
+Designator ::= IDENT:name DesignatorList
+                    {:
+
+                    :}
+                |
+                IDENT:name
+                    {:
+                    :}
+                ;
+
+DesignatorList ::= DesignatorList DesignatorPart
+                    |
+                   DesignatorPart
+                   ;
+
+DesignatorPart ::=  ExprInSquares
+                        |
+                    DOT IDENT:name
+                    ;
+
+Addop ::= PLUS
+          |
+          MINUS;
+
+Mulop ::= TIMES
+          |
+          DIV
+          |
+          MOD;
+
+Relop ::=     ISEQUAL
+	      |   ISNOTEQUAL
+	      |   ISGREATER
+	      |   ISGREATEREQ
+	      |   ISLESS
+	      |   ISLESSEQ;
+
