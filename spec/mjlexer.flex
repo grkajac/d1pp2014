@@ -49,7 +49,6 @@ import java_cup.runtime.Symbol;
 "return"    {return new_symbol(sym.RETURN, yytext());}
 "void" 	    {return new_symbol(sym.VOID, yytext());}
 "while"     {return new_symbol(sym.WHILE, yytext());}
-"do"        {return new_symbol(sym.DO, yytext());}
 "extends"   {return new_symbol(sym.EXTENDS, yytext());}
 
 "program"   { return new_symbol(sym.PROG, yytext()); }
