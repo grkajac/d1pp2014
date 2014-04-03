@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 /**
  * Created with IntelliJ IDEA.
- * User: Aleksandar Grkajac ga040202d@student.etf.rs
+ * User: Aleksandar Grkajac ga040202d@student.etf.rs  , aleksa888@gmail.com
  * Date: 1/21/14
  * Time: 8:27 PM
  * To change this template use File | Settings | File Templates.

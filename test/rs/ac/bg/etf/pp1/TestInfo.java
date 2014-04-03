@@ -2,7 +2,7 @@ package rs.ac.bg.etf.pp1;
 
 /**
  * Created with IntelliJ IDEA.
- * User: Aleksandar Grkajac ga040202d@student.etf.rs
+ * User: Aleksandar Grkajac ga040202d@student.etf.rs , aleksa888@gmail.com
  * Date: 1/29/14
  * Time: 9:51 AM
  * To change this template use File | Settings | File Templates.
