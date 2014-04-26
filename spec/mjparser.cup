@@ -76,7 +76,7 @@ scan with {:
 
 
 init with {:
-	Tab.init(); // Universe scope
+	// Tab.init(); // Universe scope
 :}
 
 action code {:
@@ -85,6 +85,7 @@ action code {:
     boolean inClassScope = false;
 
     boolean inMainFunc = false;
+    boolean hasMainFunc = false;
     boolean isMethFormParams = false;
     boolean isMethLocalParams = false;
 
@@ -93,7 +94,8 @@ action code {:
     boolean conditionError = false;
 
 	Obj currentMethod = null;
-    Struct currentVarType = Tab.noType;              boolean isMainMeth = false;
+    Struct currentVarType = Tab.noType;
+    boolean isMainMeth = false;
 
 
 	boolean returnFound = false;
@@ -152,20 +154,20 @@ non terminal FuncCalls, ProgramFunc;
 
 Program ::= PROG ProgBegin:p GlobalDeclaration LBRACE MethodDecl RBRACE
             {:
-                Tab.chainLocalSymbols(p);
-                Tab.closeScope();
+               // Tab.chainLocalSymbols(p);
+               // Tab.closeScope();
             :}
             |
             PROG ProgBegin:p GlobalDeclaration LBRACE  RBRACE
             {:
-                Tab.chainLocalSymbols(p);
-                Tab.closeScope();
+                // Tab.chainLocalSymbols(p);
+                // Tab.closeScope();
             :};
 
 ProgBegin ::=  IDENT:id
                 {:
-                    RESULT = Tab.insert(Obj.Prog, id, Tab.noType);
-                    Tab.openScope();
+                   // RESULT = Tab.insert(Obj.Prog, id, Tab.noType);
+                   // Tab.openScope();
                 :};
 
 GlobalDeclaration ::=  GlobalDeclList
@@ -186,6 +188,7 @@ GlobalDeclPart ::=  ConstDecl
 
 Type ::= IDENT:typeName
          {:
+            /*
             Obj typeNode = Tab.find(typeName);
             if (typeNode == Tab.noObj) {
                 parser.report_error("Nije pronadjen tip " + typeName + " u tabeli simbola", null);
@@ -200,8 +203,11 @@ Type ::= IDENT:typeName
                     RESULT = Tab.noType;
                 }
             }
+            */
         :};
 
+
+// ---------------------- CONST DECL --------------------------
 
 ConstDecl ::= CONST Type:tip
               {:
@@ -238,6 +244,8 @@ ConstDeclPart ::= IDENT:id EQUAL NUMBER:num
                   IDENT:id EQUAL STRING_LITERAL:str
                   {:
                   :};
+
+// ---------------------- VAR DECL --------------------------
 
 VarDecl ::= Type:typeName
                 {:
@@ -287,116 +295,8 @@ VarPart ::= IDENT:id
                 :};
 
 
+// ---------------------- CLASS DECL --------------------------
 
-
-
-MethodDecl ::= MethodDeclList;
-
-MethodDeclList ::= MethodDeclList MethodDeclPart
-                    |
-                   MethodDeclPart;
-
-MethodRetType ::= Type:retType
-                    {:
-                          isMethFormParams = true;
-                    :}
-                  |
-                  VOID
-                    {:
-                         isVoid = true;
-                         isMethFormParams = true;
-                    :};
-
-MethodName ::= MethodRetType:retType IDENT:methName
-                {:
-                    if(methName.equals("main")) {
-                        inMainFunc = true;
-                    }
-                    inGlobalScope = false;
-                    //parser.report_info("Obradjuje se funkcija " + methName + " na liniji " + methNameleft, null);
-                :};
-
-MethodVarDeclLB_Recovery ::= MethodVarDeclList
-                             {:
-                                isMethLocalParams = false;
-                             :}
-                             |
-                             LBRACE
-                             {:
-                                isMethLocalParams = false;
-                             :};
-
-MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_Recovery AllStatements RBRACE
-                     {:
-                        inGlobalScope = true;
-                        if(!inClassScope) {
-                            parser.globalFunctionsCount++;
-                        }else {
-                            parser.innerClassMethodsCount++;
-                        }
-
-                        // reseting flags
-                        inMainFunc = false;
-                        isVoid = false;
-                        returnFound = false;
-                     :};
-
-FormPars_Recovery ::= FormPars
-                      {:
-                          isMethFormParams = false;
-                      :}
-                      |
-                      RPAREN
-                      {:
-                          isMethFormParams = false;
-                          isMethLocalParams = true;
-                      :};
-
-FormPars ::= FormalParamDecl_Comma_Recovery FormPars
-					|
-			 FormalParamDecl_Rparen_Recovery;
-
-FormalParamDecl_Comma_Recovery ::= Type:typeName VarPart COMMA
-                                   |
-                                   error COMMA:l
-                                   {:
-                                       parser.report_error("Sintaksna greska prilikom deklaracije formalnih prom na liniji "+lleft+" izvrsen oporavak do ,", null);
-                                   :};
-
-FormalParamDecl_Rparen_Recovery ::= Type:typeName VarPart RPAREN
-                                    {:
-                                        isMethLocalParams = true;
-                                    :}
-                                    |
-                                    error RPAREN:l
-                                    {:
-                                         isMethLocalParams = true;
-                                        parser.report_error("Sintaksna greska prilikom deklaracije formalnih prom na liniji "+lleft+" izvrsen oporavak do )", null);
-                                    :};
-
-
-MethodVarDeclList ::= LocalVarDecl_Semi_Recovery MethodVarDeclList
-                        |
-                      LocalVarDecl_Lbrace_Recovery;
-
-
-LocalVarDecl_Semi_Recovery ::= Type:typeName M_VarList SEMI
-                                  |
-                                  error SEMI:l
-                                  {:
-                                       parser.report_error("Sintaksna greska prilikom definicije lokalnih prom. metode na liniji "+lleft+" izvrsen oporavak do ;", null);
-                                  :};
-
-LocalVarDecl_Lbrace_Recovery ::= Type:typeName M_VarList SEMI LBRACE
-                                    |
-                                    error LBRACE:l
-                                    {:
-                                        parser.report_error("Sintaksna greska prilikom deklaracije lokalnih prom. na liniji "+lleft+" izvrsen oporavak do {", null);
-                                    :};
-
-M_VarList ::= M_VarList COMMA VarPart
-               |
-              VarPart;
 
 ClassDecl ::= CLASS ClassExtendsLB_Recovery ClassDefinition
                 {:
@@ -420,7 +320,9 @@ ClassExtendsLB_Recovery ::= Type:baseClass EXTENDS Type:superClass LBRACE
                     :}
                     |
                  error LBRACE:l
-                    {:                                          
+                    {:
+                        inGlobalScope = false;
+                        inClassScope = true;
                         parser.report_error("Sintaksna greska prilikom prosirenja nadklase na liniji "+lleft+" izvrsen oporavak do {", null);
                     :}
                     ;
@@ -471,9 +373,129 @@ ClassMethodList ::= ClassMethodList ClassMethodPart
 ClassMethodPart ::= MethodDeclPart;
 
 
+// ---------------------- METHOD DECL --------------------------
+
+
+MethodDecl ::= MethodDeclList;
+
+MethodDeclList ::= MethodDeclList MethodDeclPart
+                    |
+                   MethodDeclPart;
+
+MethodRetType ::= Type:retType
+                    {:
+                          isMethFormParams = true;
+                    :}
+                  |
+                  VOID
+                    {:
+                         isVoid = true;
+                         isMethFormParams = true;
+                    :};
+
+MethodName ::= MethodRetType:retType IDENT:methName
+                {:
+                    if(methName.equals("main")) {
+                        inMainFunc = true;
+                        hasMainFunc = true;
+                    }
+                    inGlobalScope = false;
+                    //parser.report_info("Obradjuje se funkcija " + methName + " na liniji " + methNameleft, null);
+                :};
+
+MethodVarDeclLB_Recovery ::= MethodVarDeclList
+                             {:
+                                isMethLocalParams = false;
+                             :}
+                             |
+                             LBRACE
+                             {:
+                                isMethLocalParams = false;
+                             :};
+
+MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_Recovery AllStatements RBRACE
+                     {:
+                        inGlobalScope = true;
+                        if(!inClassScope) {
+                            parser.globalFunctionsCount++;
+                        }else {
+                            parser.innerClassMethodsCount++;
+                        }
+
+                        // reseting flags
+                        inMainFunc = false;
+                        isVoid = false;
+                        returnFound = false;
+                     :};
+
+// ---------------------- FORM PARAMS --------------------------
+
+FormPars_Recovery ::= FormPars
+                      {:
+                          isMethFormParams = false;
+                      :}
+                      |
+                      RPAREN
+                      {:
+                          isMethFormParams = false;
+                          isMethLocalParams = true;
+                      :};
 
 
 
+FormPars ::= FormalParamDecl_Comma_Recovery FormPars
+					|
+			 FormalParamDecl_Rparen_Recovery;
+
+FormalParamDecl_Comma_Recovery ::= Type:typeName VarPart COMMA
+                                   |
+                                   error COMMA:l
+                                   {:
+                                       parser.report_error("Sintaksna greska prilikom deklaracije formalnih prom na liniji "+lleft+" izvrsen oporavak do ,", null);
+                                   :};
+
+FormalParamDecl_Rparen_Recovery ::= Type:typeName VarPart RPAREN
+                                    {:
+                                        isMethLocalParams = true;
+                                    :}
+                                    |
+                                    error RPAREN:l
+                                    {:
+                                        isMethLocalParams = true;
+                                        parser.report_error("Sintaksna greska prilikom deklaracije formalnih prom na liniji "+lleft+" izvrsen oporavak do )", null);
+                                    :};
+
+
+
+
+MethodVarDeclList ::= LocalVarDecl_Semi_Recovery MethodVarDeclList
+                        |
+                      LocalVarDecl_Lbrace_Recovery;
+
+
+LocalVarDecl_Semi_Recovery ::= Type:typeName M_VarList SEMI
+                                  |
+                                  error SEMI:l
+                                  {:
+                                       parser.report_error("Sintaksna greska prilikom definicije lokalnih prom. metode na liniji "+lleft+" izvrsen oporavak do ;", null);
+                                  :};
+
+// --- TODO zameni Type:typeName M_VarList SEMI sa LocalVarDecl_Semi_Recovery
+
+LocalVarDecl_Lbrace_Recovery ::= Type:typeName M_VarList SEMI LBRACE
+                                    |
+                                    error LBRACE:l
+                                    {:
+                                        parser.report_error("Sintaksna greska prilikom deklaracije lokalnih prom. na liniji "+lleft+" izvrsen oporavak do {", null);
+                                    :};
+
+M_VarList ::= M_VarList COMMA VarPart
+               |
+              VarPart;
+
+
+
+// ---------------------- STATEMENTS --------------------------
 
 
 AllStatements ::= StatementList
@@ -499,6 +521,44 @@ Unmatched ::= IF Brace_condition:cond Statement
                 {:
                 :};
 
+
+Matched ::= Designator:dest EQUAL Dodela:d
+                {:
+                :}
+               |
+            Designator:dest INCREMENT SEMI
+                {:
+                :}
+               |
+            Designator:dest DECREMENT SEMI
+                {:
+                :}
+              |
+            FuncCalls
+              |
+            IF Brace_condition:cond Matched ELSE Matched
+                {:
+                :}
+              |
+            WHILE Brace_condition:cond Matched
+                {:
+                :}
+               |
+            RETURN Expr:t SEMI
+                {:
+                    returnFound = true;
+                :}
+               |
+            RETURN SEMI
+               |
+            BREAK SEMI
+               |
+            LBRACE
+                {:
+                    parser.statementsCount++;
+                :}
+                AllStatements
+            RBRACE;
 
 
 Brace_condition ::= LPAREN Condition:c RPAREN
@@ -539,7 +599,7 @@ ProgramFunc ::= Designator:d LPAREN
                      }
                 :};
 
-FuncCalls ::= ProgramFunc LPAREN ActualPars_Rparen_Recovery SEMI
+FuncCalls ::= ProgramFunc ActualPars_Rparen_Recovery SEMI
                 {:
 
                 :}
@@ -570,44 +630,6 @@ FuncCalls ::= ProgramFunc LPAREN ActualPars_Rparen_Recovery SEMI
                        parser.report_error("Sintaksna greska prilikom poziva funkcije na liniji "+lleft+" izvrsen oporavak do ;",null);
                    :}
                 ;
-
-Matched ::= Designator:dest EQUAL Dodela:d
-                {:
-                :}
-               |
-            Designator:dest INCREMENT SEMI
-                {:
-                :}
-               |
-            Designator:dest DECREMENT SEMI
-                {:
-                :}
-              |
-            FuncCalls
-              |
-            IF Brace_condition:cond Matched ELSE Matched
-                {:
-                :}
-              |
-            WHILE Brace_condition:cond Matched
-                {:
-                :}
-               |
-            RETURN Expr:t SEMI
-                {:
-                    returnFound = true;
-                :}
-               |
-            RETURN SEMI
-               |
-            BREAK SEMI
-               |
-            LBRACE
-                {:
-                    parser.statementsCount++;
-                :}
-                AllStatements
-            RBRACE;
 
 
 Condition ::= CondTermOR;
@@ -704,7 +726,7 @@ Factor ::= NUMBER
          |
        ProgramFunc ActualPars_Rparen_Recovery:lt
          {:
-
+                       // TODO trebalo bi da postoji razlika izmendju factor dela i pozivanja funkcija
          :};
 
 ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
