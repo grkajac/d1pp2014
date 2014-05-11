@@ -3,7 +3,7 @@
 
 program Prilepi
 
-	int a, b;
+	int a, b; 
 	int manji, veci, step, pom, novi;
 	const int x = 10;
 
