@@ -2,17 +2,18 @@ package rs.ac.bg.etf.pp1;
 
 import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
+import rs.etf.pp1.symboltable.Tab;
 
 import java.io.*;
 import java.util.Scanner;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Aleksandar Grkajac ga040202d@student.etf.rs  , aleksa888@gmail.com
- * Date: 1/21/14
- * Time: 8:27 PM
- * To change this template use File | Settings | File Templates.
- */
+* Created with IntelliJ IDEA.
+* User: Aleksandar Grkajac ga040202d@student.etf.rs  , aleksa888@gmail.com
+* Date: 1/21/14
+* Time: 8:27 PM
+* To change this template use File | Settings | File Templates.
+*/
 public class SingleTesting implements Testing{
 
     @Override
@@ -68,7 +69,7 @@ public class SingleTesting implements Testing{
 
                     // Level III
 
-                    // Tab.dump();
+                    Tab.dump();
 
                     if (!p.errorDetected) {
                         log.info("Parsiranje USPESNO zavrseno :)");

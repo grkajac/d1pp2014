@@ -2,6 +2,7 @@ package rs.ac.bg.etf.pp1;
 
 import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
+import rs.etf.pp1.symboltable.Tab;
 
 import java.io.*;
 
@@ -53,7 +54,7 @@ public class CompleteTesting implements Testing{
 
                 // Level III
 
-                // Tab.dump();
+                Tab.dump();
 
                 if (!p.errorDetected) {
                     log.info("Parsiranje USPESNO zavrseno :)");

@@ -4,7 +4,7 @@ program test08
 
 	class Alfa extends Nepostojeca {  //semanticka, osnovna klasa ne postoji
 		int x;
-		char x;
+		char x;                       // Nije bilo ali, semanticka greska, atribut sa istim imenom
 		real y;                       //semanticka, tip ne postoji 
 		y z;                          //semanticka, isto
 		char b;
