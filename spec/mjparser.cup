@@ -144,51 +144,55 @@ parser code {:
             switch(node){
                 case GLOBAL_VAR:
 
-                    prom = Tab.insert(Obj.Var, id, TabUtils.currentVarType);
+                    prom = Tab.insert(Obj.Var, id, type);
                     globalPrimitiveVarsCount++;
                     report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
                     break;
 
                 case CLASS_VAR:
 
-                    prom = Tab.insert(Obj.Fld, id, TabUtils.currentVarType);
+                    prom = Tab.insert(Obj.Fld, id, type);
                     innerClassAttributesCount++;
                     report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
                     break;
 
                 case METHOD_LOCAL_VAR:
 
-                    prom = Tab.insert(Obj.Var, id, TabUtils.currentVarType);
+                    prom = Tab.insert(Obj.Var, id, type);
                     report_info("Nadjena lokalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
                     break;
 
                 case METHOD_FORMAL_VAR:
 
+                    prom = Tab.insert(Obj.Var, id, type);
+                    setFormalParam(prom);
                     TabUtils.formalParamCount++;
                     break;
 
                 case GLOBAL_ARRAY_VAR:
 
-                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, TabUtils.currentVarType));
+                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
                     globalArraysCount++;
                     report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
                     break;
 
                 case CLASS_ARRAY_VAR:
 
-                    prom = Tab.insert(Obj.Fld, id, new Struct(Struct.Array, TabUtils.currentVarType));
+                    prom = Tab.insert(Obj.Fld, id, new Struct(Struct.Array, type));
                     innerClassAttributesCount++;
                     report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
                     break;
 
                 case METHOD_LOCAL_ARRAY_VAR:
 
-                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, TabUtils.currentVarType));
+                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
                     report_info("Nadjena lokalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
                     break;
 
                 case METHOD_FORMAL_ARRAY_VAR:
 
+                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
+                    setFormalParam(prom);
                     TabUtils.formalParamCount++;
                     break;
             }
@@ -197,6 +201,10 @@ parser code {:
         else {
             report_info("Semanticka greska na liniji " + idleft + " - Ime je vec definisano", null);
         }
+    }
+
+    public void setFormalParam(Obj formParam){
+           formParam.setFpPos(TabUtils.formalParamPosition++);
     }
 
     public boolean superClassProcessing(String superClass, int superClassleft){
@@ -255,8 +263,14 @@ parser code {:
     public void setMethodParams(Obj methodObj){
 
         methodObj.setLevel(TabUtils.formalParamCount);
-        TabUtils.formalParamCount = 0;
         Tab.chainLocalSymbols(methodObj);
+    }
+
+    public void insertThisParam(ScopeNode scope, VarNode var){
+
+        if(ScopeNode.CLASS.equals(scope) || ScopeNode.ABSTRACT_CLASS.equals(scope)){
+            varProcessing("this", 888, TabUtils.currentClassObj.getType(), var);
+        }
     }
 
 :}
@@ -596,10 +610,12 @@ MethodName ::= MethodRetType:retType IDENT:methName
                         TabUtils.hasMainFunc = true;
                     }
 
-                    var = VarNode.METHOD_FORMAL_VAR;
-
                     RESULT = Tab.insert(Obj.Meth, methName, retType);
+                    TabUtils.currentMethodObj = RESULT;
                     Tab.openScope();
+
+                    var = VarNode.METHOD_FORMAL_VAR;
+                    parser.insertThisParam(scope, var);
                 :};
 
 MethodVarDeclLB_Recovery ::= MethodVarDeclList
@@ -617,21 +633,24 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
 
                       parser.countMethods(scope);
 
-                      TabUtils.resetMethodsFlags();
-
                       parser.setMethodParams(methName);
+
+                      TabUtils.resetMethodsFlags();
 
                       Tab.closeScope();
                    :}
                    |
                    ABSTRACT MethodName:methName LPAREN FormPars_Recovery SEMI
                    {:
+                     if(!scope.equals(ScopeNode.ABSTRACT_CLASS)){
+                         parser.report_error("Semanticka greska - apstraktna metoda deklarisana van apstraktne klase na liniji " + methNameleft, null);
+                     }
 
                      parser.countMethods(scope);
 
-                     TabUtils.resetMethodsFlags();
-
                      parser.setMethodParams(methName);
+
+                     TabUtils.resetMethodsFlags();
 
                      Tab.closeScope();
                    :};

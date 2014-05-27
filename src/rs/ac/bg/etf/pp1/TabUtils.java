@@ -27,17 +27,19 @@ public class TabUtils {
     public static Obj currentClassObj = Tab.noObj;
     public static Struct currentVarType = Tab.noType;
     public static Struct currentMethodType = Tab.noType;
-    public static Struct returnType;
+    public static Struct returnType = Tab.noType;
 
     public static boolean returnFound = false;
     public static boolean isVoid = false;
 
-    // TODO
+    // Broj formalnih argumenata
     public static int formalParamCount = 0;
+
+    // Redni broj formalnog parametra u metodi
+    public static int formalParamPosition = 0;
     public static boolean isField = false;
     public static boolean isOne = true;
 
-    public static int redniBrParam = 0;
 
     public static void insertParam(){
 
@@ -54,5 +56,7 @@ public class TabUtils {
     public static void resetMethodsFlags(){
         isVoid = false;
         returnFound = false;
+        formalParamCount = 0;
+        formalParamPosition = 0;
     }
 }
