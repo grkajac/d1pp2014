@@ -333,13 +333,12 @@ non terminal ExprInSquaresRS_Recovery;
 non terminal DesignatorList, DesignatorPart;
 non terminal MethodVarDeclLB_Recovery;
 
-non terminal Condition, CondTermOR, CondTerm, CondFactAND, CondFact ;
 non terminal Addop, Mulop, Relop;
 
 non terminal Obj ProgBegin, ClassExtendsLB_Recovery, Designator, MethodName;
 non terminal Struct Type, MethodRetType, Term, Term_list, Expr, Factor, Factor_list;
 
-non terminal Integer Brace_condition;
+non terminal Integer Brace_condition, Condition, CondTermOR, CondTerm, CondFactAND, CondFact;
 non terminal Struct Dodela;
 non terminal FuncCalls, ProgramFunc;
 
@@ -743,68 +742,75 @@ StatementList ::= StatementList Statement
 Statement ::= Matched | Unmatched ;
 
 Unmatched ::= IF Brace_condition:cond Statement
-                {:
+              {:
 
-                :}
-                |
+              :}
+              |
               IF Brace_condition:cond Matched ELSE Unmatched
-                {:
-                :}
-                |
+              {:
+
+              :}
+              |
               WHILE Brace_condition:cond Unmatched
-                {:
-                :};
+              {:
+
+              :};
 
 
 Matched ::= Designator:dest EQUAL Dodela:d
-                {:
-                :}
-               |
+            {:
+
+            :}
+            |
             Designator:dest INCREMENT SEMI
-                {:
-                :}
-               |
+            {:
+
+            :}
+            |
             Designator:dest DECREMENT SEMI
-                {:
-                :}
-              |
+            {:
+
+            :}
+            |
             FuncCalls
-              |
+            |
             IF Brace_condition:cond Matched ELSE Matched
-                {:
-                :}
-              |
+            {:
+            :}
+            |
             WHILE Brace_condition:cond Matched
-                {:
-                :}
-               |
+            {:
+            :}
+            |
             RETURN Expr:t SEMI
-                {:
-                    TabUtils.returnFound = true;
-                :}
-               |
+            {:
+                TabUtils.returnFound = true;
+            :}
+            |
             RETURN SEMI
-               |
+            {:
+                TabUtils.returnFound = true;
+            :}
+            |
             BREAK SEMI
-               |
+            |
             LBRACE
-                {:
-                    parser.statementsCount++;
-                :}
-                AllStatements
-            RBRACE;
+            {:
+                parser.statementsCount++;
+            :}
+            AllStatements RBRACE;
 
 
 Brace_condition ::= LPAREN Condition:c RPAREN
-                        {:
-                           // RESULT = c;
-                        :}
-                        |
+                    {:
+                        RESULT = c;
+                    :}
+                    |
                     error RPAREN:l
-                        {:
-                            parser.report_error("Sintaksna greska logickog izraza unutar if ili while konstrukcije na liniji " + lleft + " izvrsen oporavak do prvog znaka )",null);
-                            TabUtils.conditionError = true;
-                        :};
+                    {:
+                        parser.report_error("Sintaksna greska logickog izraza unutar if ili while konstrukcije na liniji " + lleft + " izvrsen oporavak do prvog znaka )",null);
+                        TabUtils.conditionError = true;
+                    :};
 
 Dodela ::= 	Expr:e SEMI
 		{:
@@ -834,76 +840,78 @@ ProgramFunc ::= Designator:d LPAREN
                 :};
 
 FuncCalls ::= ProgramFunc ActualPars_Rparen_Recovery SEMI
-                {:
+              {:
 
-                :}
-                |
+              :}
+              |
               READ LPAREN Designator RPAREN SEMI
-                  {:
-                      if(TabUtils.hasMainFunc) {
-                         parser.functionCallsInMainCount++;
-                      }
-                  :}
-                 |
+              {:
+                  if(TabUtils.hasMainFunc) {
+                     parser.functionCallsInMainCount++;
+                  }
+              :}
+              |
               PRINT LPAREN Expr RPAREN SEMI
-                  {:
-                        if(TabUtils.hasMainFunc) {
-                           parser.functionCallsInMainCount++;
-                        }
-                  :}
-                |
+              {:
+                    if(TabUtils.hasMainFunc) {
+                       parser.functionCallsInMainCount++;
+                    }
+              :}
+              |
               PRINT LPAREN Expr COMMA NUMBER RPAREN SEMI
-                  {:
-                        if(TabUtils.hasMainFunc) {
-                           parser.functionCallsInMainCount++;
-                        }
-                  :}
-                |
+              {:
+                    if(TabUtils.hasMainFunc) {
+                       parser.functionCallsInMainCount++;
+                    }
+              :}
+              |
               error SEMI:l
-                   {:
-                       parser.report_error("Sintaksna greska prilikom poziva funkcije na liniji " + lleft + " izvrsen oporavak do ;",null);
-                   :}
-                ;
-
+              {:
+                  parser.report_error("Sintaksna greska prilikom poziva funkcije na liniji " + lleft + " izvrsen oporavak do ;",null);
+              :};
 
 Condition ::= CondTermOR;
 
 CondTermOR ::= CondTermOR OR CondTerm
-                |
+               |
                CondTerm;
 
 CondTerm ::= CondFactAND;
 
 CondFactAND ::= CondFactAND AND CondFact
-              |
-             CondFact;
+                |
+                CondFact;
 
 CondFact ::= Expr:exp1 Relop Expr:exp2
-                {:
-                :}
+             {:
+
+             :}
              |
              Expr:exp1
-                {:
-                :}
-             ;
+             {:
+
+             :};
 
 
 Expr ::= Term_list:tl
-             {:
-                // RESULT = tl;
-             :}
+         {:
+            // RESULT = tl;
+         :}
          |
          MINUS Term_list:tl
-             {:
-             :};
+         {:
+
+         :};
 
 Term_list ::= Term_list:t Addop Term:r
-             {:
-             :}
-           |
-           Term:trm
-            {:
-            :};
+              {:
+
+              :}
+              |
+              Term:trm
+              {:
+
+              :};
 
 Term ::= Factor_list:fl
          {:
@@ -912,56 +920,58 @@ Term ::= Factor_list:fl
 
 Factor_list ::= Factor_list:fl Mulop Factor:ff
                 {:
-                 :}
-              |
-             Factor:f
+
+                :}
+                 |
+                 Factor:f
                  {:
+
                  :};
 
 Factor ::= NUMBER
-        {:
+           {:
 
-        :}
-        |
-       CHARCONST
-         {:
+           :}
+           |
+           CHARCONST
+           {:
 
-         :}
-        |
-        LPAREN Expr RPAREN
-         {:
+           :}
+           |
+           LPAREN Expr RPAREN
+           {:
 
-         :}
-         |
-       BOOLVAL
-         {:
+           :}
+           |
+           BOOLVAL
+           {:
 
-         :}
-         |
-       STRING_LITERAL
-         {:
+           :}
+           |
+           STRING_LITERAL
+           {:
 
-         :}
-         |
-       NEW Type:id LSQUARE Expr RSQUARE
-         {:
-                parser.objectCreationCount++;
-         :}
-         |
-       NEW Type:id
-         {:
-                parser.objectCreationCount++;
-         :}
-         |
-       Designator:d
-         {:
+           :}
+           |
+           NEW Type:id LSQUARE Expr RSQUARE
+           {:
+                  parser.objectCreationCount++;
+           :}
+           |
+           NEW Type:id
+           {:
+                  parser.objectCreationCount++;
+           :}
+           |
+           Designator:d
+           {:
 
-         :}
-         |
-       ProgramFunc ActualPars_Rparen_Recovery:lt
-         {:
-                       // TODO trebalo bi da postoji razlika izmendju factor dela i pozivanja funkcija
-         :};
+           :}
+           |
+           ProgramFunc ActualPars_Rparen_Recovery:lt
+           {:
+                         // TODO trebalo bi da postoji razlika izmendju factor dela i pozivanja funkcija
+           :};
 
 ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
                                {:
@@ -975,7 +985,7 @@ ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
 
 
 ActualPars ::= ActualParamList
-				|
+			   |
 			   /* epsilon */  ;
 
 ActualParamList ::= ActualParamList COMMA Expr
@@ -990,26 +1000,22 @@ Designator ::= IDENT:name DesignatorList
                 IDENT:name
                 {:
                     TabUtils.isSingleName = true;
-                :}
-                ;
+                :};
 
 DesignatorList ::= DesignatorList DesignatorPart
-                    |
-                   DesignatorPart
-                   ;
+                   |
+                   DesignatorPart;
 
 ExprInSquaresRS_Recovery ::= LSQUARE Expr RSQUARE
                              |
                              error RSQUARE:l
                              {:
                                 parser.report_error("Sintaksna greska izraza za index. niza na liniji " + lleft + " izvrsen oporavak do ]",null);
-                             :}
-                             ;
+                             :};
 
 DesignatorPart ::=  ExprInSquaresRS_Recovery
-                        |
-                    DOT IDENT:name
-                    ;
+                    |
+                    DOT IDENT:name;
 
 Addop ::= PLUS
           |
@@ -1022,9 +1028,14 @@ Mulop ::= TIMES
           MOD;
 
 Relop ::=     ISEQUAL
-	      |   ISNOTEQUAL
-	      |   ISGREATER
-	      |   ISGREATEREQ
-	      |   ISLESS
-	      |   ISLESSEQ;
+              |
+              ISNOTEQUAL
+              |
+              ISGREATER
+              |
+              ISGREATEREQ
+              |
+              ISLESS
+              |
+              ISLESSEQ;
 
