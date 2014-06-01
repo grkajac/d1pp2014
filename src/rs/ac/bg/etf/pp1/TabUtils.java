@@ -37,9 +37,10 @@ public class TabUtils {
 
     // Redni broj formalnog parametra u metodi
     public static int formalParamPosition = 0;
-    public static boolean isField = false;
-    public static boolean isOne = true;
 
+    public static Obj currentDesignatorObj = Tab.noObj;
+
+    public static boolean inWhile = false;
 
     public static void insertParam(){
 
