@@ -12,6 +12,9 @@ import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.*;
 import rs.etf.pp1.symboltable.visitors.DumpSymbolTableVisitor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TabUtils {
 
     public final static Struct boolType = new Struct(Struct.Bool);
@@ -42,8 +45,18 @@ public class TabUtils {
 
     public static boolean inWhile = false;
 
+    // abstract classes
+    public static Map<String, Obj> abstractClasses = new HashMap<String, Obj>();
+    public static String currentTypeNameUses;
+    public static boolean hasAbstractMethod = false;
+
     public static void insertParam(){
 
+    }
+
+    public static boolean isAbstractClass(){
+
+        return abstractClasses.containsKey(currentTypeNameUses);
     }
 
     public static String printObj(Obj obj){

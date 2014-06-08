@@ -248,6 +248,31 @@ parser code {:
         return returnObj;
     }
 
+    public boolean addAbstractClass(Obj absClass, ScopeNode scope){
+
+        boolean result = false;
+
+        if(!Tab.noObj.equals(absClass) && ScopeNode.ABSTRACT_CLASS.equals(scope)) {
+            TabUtils.abstractClasses.put(absClass.getName(), absClass);
+            result = true;
+        }
+
+        return result;
+    }
+
+    public void checkAbstractMethodExists(ScopeNode scope){
+
+        if(ScopeNode.CLASS.equals(scope) && TabUtils.hasAbstractMethod){
+            report_error("Semanticka greska: [R105] Klasa MORA biti apstraktna, posto sadrzi abs. metodu/e", null);
+        }
+
+        if(ScopeNode.ABSTRACT_CLASS.equals(scope) && !TabUtils.hasAbstractMethod){
+           report_error("Semanticka greska : [R103] Abstrakna klasa MORA imati bar jednu abs. metodu", null);
+        }
+
+        TabUtils.hasAbstractMethod = false;
+    }
+
     public void countMethods(ScopeNode scope){
 
         switch(scope){
@@ -312,10 +337,16 @@ parser code {:
 
        Struct result = Tab.noType;
 
+       if(TabUtils.isAbstractClass()){
+
+          report_error("Semanticka greska na liniji " + exprleft + " :[R104] kreiranje niza tipom apstraktne klase!", null);
+          return result;
+       }
+
        if(Tab.intType.equals(expr)){
 
-         objectCreationCount++;
-         result = new Struct(Struct.Array, type);
+          objectCreationCount++;
+          result = new Struct(Struct.Array, type);
        }
        else {
           report_error("Semanticka greska na liniji " + exprleft + " : broj elemenata niza mora biti tipa int! ", null);
@@ -327,6 +358,12 @@ parser code {:
     public Struct newTypeStat(Struct type, int typeleft){
 
         Struct result = Tab.noType;
+
+        if(TabUtils.isAbstractClass()){
+
+          report_error("Semanticka greska na liniji " + typeleft + " :[R104] kreiranje objekta tipom apstraktne klase!", null);
+          return result;
+        }
 
         if(type.getKind() == Struct.Class){
            result = type;
@@ -456,6 +493,9 @@ Type ::= IDENT:typeName
          {:
 
             Obj typeNode = Tab.find(typeName);
+
+            TabUtils.currentTypeNameUses = typeName;
+
             if (typeNode.equals(Tab.noObj)) {
 
                 parser.report_error("Semanticka greska - Nije pronadjen tip '" + typeName + "' u tabeli simbola", null);
@@ -585,6 +625,11 @@ ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
                  if(!Tab.noObj.equals(classObj)){
 
                     Tab.chainLocalSymbols(classObj.getType());
+
+                    parser.addAbstractClass(classObj, scope);
+
+                    parser.checkAbstractMethodExists(scope);
+
                     parser.report_info("Nadjena klasa na liniji " + classObjleft + " | " + TabUtils.printObj(classObj), null);
                  }
 
@@ -720,6 +765,8 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                      if(!scope.equals(ScopeNode.ABSTRACT_CLASS)){
                          parser.report_error("Semanticka greska - apstraktna metoda deklarisana van apstraktne klase na liniji " + methNameleft, null);
                      }
+
+                     TabUtils.hasAbstractMethod = true;
 
                      parser.countMethods(scope);
 
