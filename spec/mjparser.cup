@@ -374,7 +374,41 @@ parser code {:
         return result;
     }
 
-    public Struct mulopFactor(Struct factorLeft, Struct factorRight, int line){
+    public boolean isTermsStringCompatibile(Struct termLeft, Struct termRight) {
+
+        return (termLeft.getKind() == Struct.Array && termLeft.getElemType().getKind() == Struct.Char &&
+                termRight.getKind() == Struct.Array && termRight.getElemType().getKind() == Struct.Char) ? true : false;
+    }
+
+    public Struct addopTerms(Struct termLeft, Struct termRight, int line, int op){
+
+        Struct result = Tab.noType;
+
+        if(op == 23) {
+
+           if(termLeft.getKind() == Struct.Int && termRight.getKind() == Struct.Int) {
+
+              result = Tab.intType;
+           } else if(isTermsStringCompatibile(termLeft, termRight)){
+
+               result = TabUtils.stringType;
+           }  else {
+
+               report_error("Semanticka greska na liniji " + line + " : izrazi pri operaciji + moraju biti tipa int ili string! ", null);
+           }
+        } else if (op == 24) {
+
+           if(termLeft.getKind() == Struct.Int && termRight.getKind() == Struct.Int) {
+              result = Tab.intType;
+           } else {
+               report_error("Semanticka greska na liniji " + line + " : izrazi pri operaciji -, - moraju biti tipa int! ", null);
+           }
+        }
+
+        return result;
+    }
+
+    public Struct mulopFactors(Struct factorLeft, Struct factorRight, int line){
 
         Struct result = Tab.noType;
 
@@ -382,6 +416,21 @@ parser code {:
              report_error("Semanticka greska na liniji " + line + " : izrazi pri operacijama *, / i % moraju biti tipa int! ", null);
         }else {
             result = Tab.intType;
+        }
+
+        return result;
+    }
+
+    public Struct minusTerm(Struct termList, int termlistleft) {
+
+        Struct result = Tab.noType;
+
+        if(termList.getKind() == Struct.Int) {
+           result = Tab.intType;
+        } else {
+
+           report_error("Semanticka greska na liniji " + termlistleft + " : iskaz mora biti tipa int", null);
+           result = Tab.noType;
         }
 
         return result;
@@ -445,7 +494,7 @@ non terminal AllStatements, StatementList, Statement;
 non terminal Unmatched, Matched, WhileBreak;
 non terminal MethodVarDeclLB_Recovery;
 
-non terminal Addop, Mulop, Relop;
+non terminal Integer Addop, Mulop, Relop;
 
 non terminal Obj ProgBegin, ClassExtendsLB_Recovery, MethodName;
 non terminal Obj Designator, DesignatorList, DesignatorPart, ExprInSquaresRS_Recovery;
@@ -959,7 +1008,7 @@ Dodela ::= 	Expr:e SEMI
             {:
 
                 parser.report_error("Sintaksna greska prilikom dodele vrednosti na liniji " + lleft + " izvrsen oporavak do ;",null);
-                // RESULT = Tab.noType;
+                RESULT = Tab.noType;
 
             :};
 
@@ -1027,35 +1076,37 @@ CondFactAND ::= CondFactAND:cand AND CondFact:cf
                      RESULT = cf;
                 :};
 
-CondFact ::= Expr:exp1 Relop Expr:exp2
+CondFact ::= Expr:exp1 Relop:op Expr:exp2
              {:
 
              :}
              |
              Expr:exp1
              {:
-                  // RESULT = exp1;
+                 // RESULT = exp1;
+                 // TODO odraditi logiku za proveru vrednosti i na osnovu nje definisati da li je
+                 // CondFact true/false
              :};
 
 
 Expr ::= Term_list:tl
          {:
-            // RESULT = tl;
+             RESULT = tl;
          :}
          |
          MINUS Term_list:tl
          {:
-
+             RESULT = parser.minusTerm(tl, tlleft);
          :};
 
-Term_list ::= Term_list:t Addop Term:r
+Term_list ::= Term_list:t Addop:op Term:r
               {:
-
+                   RESULT = parser.addopTerms(t, r, rleft, op);
               :}
               |
               Term:trm
               {:
-
+                   RESULT = trm;
               :};
 
 Term ::= Factor_list:fl
@@ -1063,9 +1114,9 @@ Term ::= Factor_list:fl
              RESULT = fl;
          :};
 
-Factor_list ::= Factor_list:fl Mulop Factor:ff
+Factor_list ::= Factor_list:fl Mulop:op Factor:ff
                 {:
-                    RESULT = parser.mulopFactor(fl, ff, flleft);
+                    RESULT = parser.mulopFactors(fl, ff, flleft);
                 :}
                  |
                  Factor:f
@@ -1117,6 +1168,8 @@ Factor ::= NUMBER
            ProgramFunc ActualPars_Rparen_Recovery:lt
            {:
                          // TODO trebalo bi da postoji razlika izmendju factor dela i pozivanja funkcija
+                         // ovo je deo kod kojeg je pozivanje funkcije na desnoj strani
+                         // a = func();
            :};
 
 ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
@@ -1178,8 +1231,10 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
 
                             parser.report_error("Semanticka greska na liniji " + exSqrleft + " : nadjeni element mora biti tipa niz! ", null);
                             RESULT = Tab.noObj;
+                        } else {
+
+                            RESULT = TabUtils.currentDesignatorObj;
                         }
-                        RESULT = TabUtils.currentDesignatorObj;
                     :}
                     |
                     DOT IDENT:name
@@ -1187,25 +1242,25 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
                          RESULT = parser.getClassDesignator(name, nameleft);
                     :};
 
-Addop ::= PLUS
+Addop ::= PLUS {: RESULT = 23; :}
           |
-          MINUS;
+          MINUS {: RESULT = 24; :};
 
-Mulop ::= TIMES
+Mulop ::= TIMES {: RESULT = 25; :}
           |
-          DIV
+          DIV {: RESULT = 26; :}
           |
-          MOD;
+          MOD {: RESULT = 27; :};
 
-Relop ::=     ISEQUAL
-              |
-              ISNOTEQUAL
-              |
-              ISGREATER
-              |
-              ISGREATEREQ
-              |
-              ISLESS
-              |
-              ISLESSEQ;
+Relop ::= ISEQUAL {: RESULT = 0; :}
+          |
+          ISNOTEQUAL {: RESULT = 1; :}
+          |
+          ISGREATER {: RESULT = 4; :}
+          |
+          ISGREATEREQ {: RESULT = 5; :}
+          |
+          ISLESS {: RESULT = 2; :}
+          |
+          ISLESSEQ {: RESULT = 3; :};
 
