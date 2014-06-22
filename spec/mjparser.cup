@@ -6,6 +6,8 @@ import org.apache.log4j.*;
 // import java.io.*;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 
 parser code {:
@@ -123,7 +125,7 @@ parser code {:
 
         }
         else {
-            report_error("Semanticka greska na liniji " + idleft + " : [R76] Ime je vec definisano", null);
+            report_error("Semanticka greska na liniji " + idleft + " : [R76] Ime konstante '" + konstanta.getName() + "' je vec definisano", null);
         }
     }
 
@@ -134,9 +136,12 @@ parser code {:
            return;
         }
 
-        Obj promenljiva = Tab.find(id);
+        Obj promenljiva = Tab.currentScope().findSymbol(id);
 
-        // Tab.noObj.equals(promenljiva) && !type.equals(promenljiva.getType())
+        if(promenljiva == null){
+            promenljiva =  Tab.noObj;
+        }
+
         if (Tab.noObj.equals(promenljiva)) {
 
             Obj prom;
@@ -199,7 +204,7 @@ parser code {:
 
         }
         else {
-            report_error("Semanticka greska na liniji " + idleft + " - Ime je vec definisano", null);
+            report_error("Semanticka greska na liniji " + idleft + " - Ime promeljive '" + promenljiva.getName() + "' je vec definisano", null);
         }
     }
 
@@ -207,9 +212,9 @@ parser code {:
            formParam.setFpPos(TabUtils.formalParamPosition++);
     }
 
-    public boolean superClassProcessing(String superClass, int superClassleft){
+    public Obj superClassProcessing(String superClass, int superClassleft){
 
-        boolean result = false;
+        Obj result = Tab.noObj;
         if(superClass != null){
 
             Obj superClassObj = Tab.find(superClass);
@@ -220,7 +225,9 @@ parser code {:
 
                 report_error("Semanticka greska na liniji " + superClassleft + " - Nadklasa nije tip i nije tipa klase", null);
             } else {
-                result = true;
+
+                extendingClassesCount++;
+                result = superClassObj;
             }
         }
 
@@ -231,15 +238,17 @@ parser code {:
 
         Obj returnObj = Tab.noObj;
 
-        if(superClassProcessing(superClass, superClassleft)){
-            extendingClassesCount++;
-        }
-
+        Obj superObj = superClassProcessing(superClass, superClassleft);
 
         Obj baseClassObj = Tab.find(baseClass);
         if(Tab.noObj.equals(baseClassObj)){
 
             TabUtils.currentClassObj = Tab.insert(Obj.Type, baseClass, new Struct(Struct.Class));
+
+            if(!Tab.noObj.equals(superObj)){
+                TabUtils.copyBaseClassMembersToExtendedClass(TabUtils.currentClassObj, superObj);
+            }
+
             returnObj = TabUtils.currentClassObj;
             innerClassesCount++;
         }else {
@@ -303,11 +312,26 @@ parser code {:
         Obj obj = Tab.find(name);
 
         if(Tab.noObj.equals(obj)){
-            report_error("Semanticka greska na liniji " + nameleft + " : ime " + name + " nije deklarisano! ", null);
+            report_error("Semanticka greska na liniji " + nameleft + " : ime '" + name + "' nije deklarisano! ", null);
             return obj;
         }
 
         return obj;
+    }
+
+    public Obj getFieldFromClass(String fieldName, Obj className) {
+
+        Obj field = null;
+
+        if(className.getName().equals("this")){
+
+             field = Tab.currentScope.getOuter().findSymbol(fieldName);
+        } else {
+
+             field = className.getType().getMembersTable().searchKey(fieldName);
+        }
+
+        return field;
     }
 
     public Obj getClassDesignator(String name, int nameleft){
@@ -320,7 +344,7 @@ parser code {:
              return result;
         }
 
-        Obj classElement = className.getType().getMembersTable().searchKey(name);
+        Obj classElement = getFieldFromClass(name, className);
 
         if(classElement == null){
            report_error("Semanticka greska na liniji " + nameleft + " : ime " + name + " nije deklarisano unutar klase! ", null);
@@ -374,7 +398,7 @@ parser code {:
         return result;
     }
 
-    public boolean isTermsStringCompatibile(Struct termLeft, Struct termRight) {
+    public boolean isTermsStringCompatible(Struct termLeft, Struct termRight) {
 
         return (termLeft.getKind() == Struct.Array && termLeft.getElemType().getKind() == Struct.Char &&
                 termRight.getKind() == Struct.Array && termRight.getElemType().getKind() == Struct.Char) ? true : false;
@@ -384,12 +408,17 @@ parser code {:
 
         Struct result = Tab.noType;
 
+        if( !termLeft.compatibleWith(termRight)){
+             report_error("Semanticka greska na liniji " + line + " : addop izrazi nisu kompatibilni! ", null);
+             return result;
+        }
+
         if(op == 23) {
 
            if(termLeft.getKind() == Struct.Int && termRight.getKind() == Struct.Int) {
 
               result = Tab.intType;
-           } else if(isTermsStringCompatibile(termLeft, termRight)){
+           } else if(isTermsStringCompatible(termLeft, termRight)){
 
                result = TabUtils.stringType;
            }  else {
@@ -434,6 +463,208 @@ parser code {:
         }
 
         return result;
+    }
+
+    // TODO
+   public boolean checkActParamsType(Obj func, int funcleft) {
+
+      boolean isOK = true;
+
+      if(TabUtils.actualParams.size() != 0){
+
+          Iterator<Struct> actualParams = TabUtils.actualParams.iterator();
+          Iterator<Obj> formalParams = func.getLocalSymbols().iterator();
+          int counter = 1;
+
+          while(actualParams.hasNext() && formalParams.hasNext()) {
+
+              if(!TabUtils.assignableTo(actualParams.next(), formalParams.next().getType())) {
+
+                  report_error("Semanticka greska na liniji " + funcleft + " : stvarni parametar na poziciji " + counter + " nije kompatibilan pri dodeli sa formalnim parametrom metode.", null);
+                  isOK = false;
+              }
+              counter++;
+          }
+      }
+
+      return isOK;
+   }
+
+    public Struct checkFunc(Obj func, int funcleft) {
+
+        Struct result = Tab.noType;
+
+        if(func.getKind() != Obj.Meth){
+
+             report_error("Semanticka greska na liniji " + funcleft + " : ime mora oznacavati metodu un.klase ili glob. metodu.", null);
+             return result;
+        }
+
+        // treba nam ova provera zbog this argumenta kod klasa
+        int actParamNum = TabUtils.actualParams.size();
+
+        if(func.getLocalSymbols().isEmpty() == false &&
+           ((Obj)func.getLocalSymbols().toArray()[0]).getName().equals("this")) {
+
+             actParamNum++;
+        }
+
+        if(func.getLevel() != actParamNum){
+
+          report_error("Semanticka greska na liniji " + funcleft + " : broj stvarnih i formalnih parametara se ne slaze", null);
+          //return result;
+        }
+
+        if(!checkActParamsType(func, funcleft)){
+            //return result;
+        }
+
+        // broji se funkcija
+        if(TabUtils.hasMainFunc && TabUtils.isSingleName) {
+           functionCallsInMainCount++;
+        }
+
+        // ispis poruke koriscenja globalne funkcije / metode unutrasnje klase
+        if(TabUtils.isSingleName){
+
+            report_info("Poziv globalne funkcije na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
+        } else {
+
+            report_info("Poziv metode un.klase na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
+        }
+
+        return func.getType();
+    }
+
+    public boolean checkRefTypeOperator(Struct exp1, Struct exp2, int op) {
+
+        return (exp1.isRefType() && exp2.isRefType() && (op == 0 || op == 1)) ? true : false;
+    }
+
+    public boolean condFactCheck(Struct exp1, Struct exp2, int exp1left, int op) {
+
+        boolean result = true;
+
+        if( !exp1.compatibleWith(exp2)) {
+
+           report_error("Semanticka greska na liniji " + exp1left + " : pri uslovnim proverama tipovi nisu kompatibilni", null);
+           result = false;
+        }
+
+        if(checkRefTypeOperator(exp1, exp2, op)) {
+
+           report_error("Semanticka greska na liniji " + exp1left + " : pri uslovnim proverama tipovi klase ili niza mogu koristiti samo != i == operatore.", null);
+           result = false;
+        }
+
+        return result;
+    }
+
+    public boolean checkBasicType(Struct e) {
+
+        return ( TabUtils.stringType.equals(e) || Struct.Char == e.getKind() ||
+                 TabUtils.boolType.equals(e)   || Struct.Int == e.getKind() )
+                 ? true : false;
+    }
+
+    public boolean isAssignableType(Obj d) {
+        return (Obj.Var == d.getKind() || Obj.Elem == d.getKind() || Obj.Fld == d.getKind() ) ? true : false;
+    }
+
+    public void checkPrint(Struct e, int eleft) {
+
+        if(!checkBasicType(e)) {
+
+           report_error("Semanticka greska na liniji " + eleft + " : izraz u print f-ji mora biti int,char,bool ili string.", null);
+
+        } else {
+
+           if(TabUtils.hasMainFunc) {
+                functionCallsInMainCount++;
+           }
+
+        }
+    }
+
+    public void checkRead(Obj d, int dleft) {
+
+        if(!isAssignableType(d)) {
+
+           report_error("Semanticka greska na liniji " + dleft + " : ime u read izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+
+        } else if(!checkBasicType(d.getType())){
+
+            report_error("Semanticka greska na liniji " + dleft + " : izraz u read f-ji mora biti int,char,bool ili string.", null);
+
+        } else {
+
+           if(TabUtils.hasMainFunc) {
+                functionCallsInMainCount++;
+           }
+
+        }
+    }
+
+    public boolean checkEqualExpr(Obj d, Struct s, int dleft) {
+
+        boolean isOk = false;
+
+        if(!isAssignableType(d)) {
+
+           report_error("Semanticka greska na liniji " + dleft + " : ime sa leve strane izraza dodele vrednosti mora biti promenljiva, elem niza ili polje klase.", null);
+           report_error("Semanticka greska na liniji " + dleft + " : promenljive sa leve i desne strane izraza dodele nisu kompatibilni.", null);
+
+        } else if(!TabUtils.assignableTo(d.getType(), s)){
+
+            report_error("Semanticka greska na liniji " + dleft + " : promenljive sa leve i desne strane izraza dodele nisu kompatibilni.", null);
+
+        } else {
+
+            isOk = true;
+        }
+        return isOk;
+    }
+
+    public boolean checkIncDecExpr(Obj d, int dleft) {
+
+        boolean isOk = false;
+
+        if(!isAssignableType(d)) {
+
+           report_error("Semanticka greska na liniji " + dleft + " : ime u increment/decrement izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+
+        } else if(!Tab.intType.equals(d.getType())){
+
+            report_error("Semanticka greska na liniji " + dleft + " : increment/decrement izraz mora biti tipa int.", null);
+
+        } else {
+
+            isOk = true;
+        }
+        return isOk;
+    }
+
+    public void checkMainFunction(int mleft) {
+
+        if(!Tab.noObj.equals(TabUtils.currentMethodObj) && TabUtils.currentMethodObj.getName().equals("main")){
+
+            if(Tab.currentScope().getnVars() > 0) {
+
+                report_error("Semanticka greska na liniji " + mleft + " : main funkcija ne sme imati lokalne i formalne argumente.", null);
+            }
+
+            if(!TabUtils.currentMethodObj.getType().equals(Tab.noType)) {
+
+               report_error("Semanticka greska na liniji " + mleft + " : main funkcija mora biti tipa void.", null);
+            }
+        }
+    }
+
+    public void checkReturnStat(Struct exp, int expleft) {
+
+        if(!TabUtils.currentMethodObj.getType().equals(exp)) {
+            report_error("Semanticka greska na liniji " + expleft + " : povratni tip metode se ne slaze sa tipom return izraza.", null);
+        }
     }
 
 :}
@@ -497,15 +728,19 @@ non terminal MethodVarDeclLB_Recovery;
 non terminal Integer Addop, Mulop, Relop;
 
 non terminal Obj ProgBegin, ClassExtendsLB_Recovery, MethodName;
-non terminal Obj Designator, DesignatorList, DesignatorPart, ExprInSquaresRS_Recovery;
+non terminal Obj Designator, DesignatorList, DesignatorPart, ExprInSquaresRS_Recovery, ProgramFunc;
 non terminal Struct Type, MethodRetType, Term, Term_list, Expr, Factor, Factor_list;
 
 non terminal Boolean Brace_condition, Condition, CondTermOR, CondTerm, CondFactAND, CondFact;
 non terminal Struct Dodela;
-non terminal FuncCalls, ProgramFunc;
+non terminal FuncCalls;
 
 Program ::= PROG ProgBegin:p GlobalDeclaration LBRACE MethodDecl RBRACE
             {:
+                if(!TabUtils.hasMainFunc) {
+                   parser.report_error("Semanticka greska - Nije pronadjena main funkcija", null);
+                }
+
                 Tab.chainLocalSymbols(p);
                 Tab.closeScope();
             :}
@@ -513,6 +748,7 @@ Program ::= PROG ProgBegin:p GlobalDeclaration LBRACE MethodDecl RBRACE
             PROG ProgBegin:p GlobalDeclaration LBRACE  RBRACE
             {:
                 Tab.chainLocalSymbols(p);
+                parser.report_error("Semanticka greska - Nije pronadjena main funkcija", null);
                 Tab.closeScope();
             :};
 
@@ -787,14 +1023,14 @@ MethodName ::= MethodRetType:retType IDENT:methName
                     parser.insertThisParam(scope, var);
                 :};
 
-MethodVarDeclLB_Recovery ::= MethodVarDeclList
+MethodVarDeclLB_Recovery ::= MethodVarDeclList:m
                              {:
-
+                                  parser.checkMainFunction(mleft);
                              :}
                              |
-                             LBRACE
+                             LBRACE:l
                              {:
-
+                                  parser.checkMainFunction(lleft);
                              :};
 
 MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_Recovery AllStatements RBRACE
@@ -933,17 +1169,17 @@ Unmatched ::= IF Brace_condition:cond Statement
 
 Matched ::= Designator:dest EQUAL Dodela:d
             {:
-
+                 parser.checkEqualExpr(dest, d, destleft);
             :}
             |
             Designator:dest INCREMENT SEMI
             {:
-
+                  parser.checkIncDecExpr(dest, destleft);
             :}
             |
             Designator:dest DECREMENT SEMI
             {:
-
+                  parser.checkIncDecExpr(dest, destleft);
             :}
             |
             FuncCalls
@@ -961,11 +1197,13 @@ Matched ::= Designator:dest EQUAL Dodela:d
             RETURN Expr:t SEMI
             {:
                 TabUtils.returnFound = true;
+                parser.checkReturnStat(t, tleft);
             :}
             |
-            RETURN SEMI
+            RETURN:r SEMI
             {:
                 TabUtils.returnFound = true;
+                parser.checkReturnStat(Tab.noType, rleft);
             :}
             |
             BREAK:b SEMI
@@ -1002,6 +1240,7 @@ Dodela ::= 	Expr:e SEMI
 
                 RESULT = e;
                 */
+                 RESULT = e;
             :}
             |
             error SEMI:l
@@ -1014,37 +1253,30 @@ Dodela ::= 	Expr:e SEMI
 
 ProgramFunc ::= Designator:d LPAREN
                 {:
-
-                     // broji se funkcija i u slucaju da se desi greska u njenim argumentima
-                     if(TabUtils.hasMainFunc && TabUtils.isSingleName) {
-                         parser.functionCallsInMainCount++;
-                     }
+                     TabUtils.actualParamCount = 0;
+                     TabUtils.actualParams = new ArrayList<Struct>();
+                     RESULT = d;
                 :};
 
-FuncCalls ::= ProgramFunc ActualPars_Rparen_Recovery SEMI
+FuncCalls ::= ProgramFunc:func ActualPars_Rparen_Recovery:ap SEMI
+              {:
+                   RESULT = parser.checkFunc(func, funcleft);
+              :}
+              |
+              READ LPAREN Designator:d RPAREN SEMI
               {:
 
+                  parser.checkRead(d, dleft);
               :}
               |
-              READ LPAREN Designator RPAREN SEMI
+              PRINT LPAREN Expr:e RPAREN SEMI
               {:
-                  if(TabUtils.hasMainFunc) {
-                     parser.functionCallsInMainCount++;
-                  }
+                   parser.checkPrint(e, eleft);
               :}
               |
-              PRINT LPAREN Expr RPAREN SEMI
+              PRINT LPAREN Expr:e COMMA NUMBER RPAREN SEMI
               {:
-                    if(TabUtils.hasMainFunc) {
-                       parser.functionCallsInMainCount++;
-                    }
-              :}
-              |
-              PRINT LPAREN Expr COMMA NUMBER RPAREN SEMI
-              {:
-                    if(TabUtils.hasMainFunc) {
-                       parser.functionCallsInMainCount++;
-                    }
+                    parser.checkPrint(e, eleft);
               :}
               |
               error SEMI:l
@@ -1078,7 +1310,7 @@ CondFactAND ::= CondFactAND:cand AND CondFact:cf
 
 CondFact ::= Expr:exp1 Relop:op Expr:exp2
              {:
-
+                  RESULT = parser.condFactCheck(exp1, exp2, exp1left, op);
              :}
              |
              Expr:exp1
@@ -1086,6 +1318,8 @@ CondFact ::= Expr:exp1 Relop:op Expr:exp2
                  // RESULT = exp1;
                  // TODO odraditi logiku za proveru vrednosti i na osnovu nje definisati da li je
                  // CondFact true/false
+
+                 RESULT = true;
              :};
 
 
@@ -1118,11 +1352,11 @@ Factor_list ::= Factor_list:fl Mulop:op Factor:ff
                 {:
                     RESULT = parser.mulopFactors(fl, ff, flleft);
                 :}
-                 |
-                 Factor:f
-                 {:
-                     RESULT = f;
-                 :};
+                |
+                Factor:f
+                {:
+                    RESULT = f;
+                :};
 
 Factor ::= NUMBER
            {:
@@ -1162,14 +1396,18 @@ Factor ::= NUMBER
            |
            Designator:d
            {:
-               RESULT = d.getType();
+               if(d.getType() == null) {
+
+                    RESULT = Tab.noType;
+               } else {
+
+                    RESULT = d.getType();
+               }
            :}
            |
-           ProgramFunc ActualPars_Rparen_Recovery:lt
+           ProgramFunc:func ActualPars_Rparen_Recovery:ap
            {:
-                         // TODO trebalo bi da postoji razlika izmendju factor dela i pozivanja funkcija
-                         // ovo je deo kod kojeg je pozivanje funkcije na desnoj strani
-                         // a = func();
+               RESULT = parser.checkFunc(func, funcleft);
            :};
 
 ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
@@ -1187,9 +1425,15 @@ ActualPars ::= ActualParamList
 			   |
 			   /* epsilon */  ;
 
-ActualParamList ::= ActualParamList COMMA Expr
+ActualParamList ::= ActualParamList COMMA Expr:e
+                    {:
+                       TabUtils.actualParams.add(e);
+                    :}
 					|
-					Expr ;
+					Expr:e
+					{:
+                       TabUtils.actualParams.add(e);
+					:};
 
 Designator ::= IDENT:name
                 {:
@@ -1200,6 +1444,7 @@ Designator ::= IDENT:name
                 DesignatorList:dsList
                 {:
                     RESULT = dsList;
+                    TabUtils.currentDesignatorObj = Tab.noObj;
                 :}
                 |
                 IDENT:name
@@ -1209,9 +1454,15 @@ Designator ::= IDENT:name
                     RESULT = parser.getDesignator(name, nameleft);
                 :};
 
-DesignatorList ::= DesignatorList DesignatorPart
+DesignatorList ::= DesignatorList DesignatorPart:dlp
+                   {:
+                        RESULT = dlp;
+                   :}
                    |
-                   DesignatorPart;
+                   DesignatorPart:dp
+                   {:
+                        RESULT = dp;
+                   :};
 
 ExprInSquaresRS_Recovery ::= LSQUARE Expr:e RSQUARE
                              {:
@@ -1233,7 +1484,7 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
                             RESULT = Tab.noObj;
                         } else {
 
-                            RESULT = TabUtils.currentDesignatorObj;
+                            RESULT = new Obj(Obj.Elem, "",TabUtils.currentDesignatorObj.getType().getElemType());
                         }
                     :}
                     |
