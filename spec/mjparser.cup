@@ -150,7 +150,9 @@ parser code {:
                 case GLOBAL_VAR:
 
                     prom = Tab.insert(Obj.Var, id, type);
-                    globalPrimitiveVarsCount++;
+
+                    if(!type.isRefType()) { globalPrimitiveVarsCount++; }
+
                     report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
                     break;
 
@@ -528,6 +530,7 @@ parser code {:
         if(TabUtils.isSingleName){
 
             report_info("Poziv globalne funkcije na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
+
         } else {
 
             report_info("Poziv metode un.klase na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
@@ -588,59 +591,61 @@ parser code {:
 
     public void checkRead(Obj d, int dleft) {
 
+        boolean isOk = true;
+
         if(!isAssignableType(d)) {
 
            report_error("Semanticka greska na liniji " + dleft + " : ime u read izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+           isOk = false;
 
-        } else if(!checkBasicType(d.getType())){
+        }
+
+        if(!checkBasicType(d.getType())){
 
             report_error("Semanticka greska na liniji " + dleft + " : izraz u read f-ji mora biti int,char,bool ili string.", null);
 
-        } else {
+        }
 
-           if(TabUtils.hasMainFunc) {
-                functionCallsInMainCount++;
-           }
-
+        if(isOk && TabUtils.hasMainFunc) {
+            functionCallsInMainCount++;
         }
     }
 
     public boolean checkEqualExpr(Obj d, Struct s, int dleft) {
 
-        boolean isOk = false;
+        boolean isOk = true;
 
         if(!isAssignableType(d)) {
 
            report_error("Semanticka greska na liniji " + dleft + " : ime sa leve strane izraza dodele vrednosti mora biti promenljiva, elem niza ili polje klase.", null);
-           report_error("Semanticka greska na liniji " + dleft + " : promenljive sa leve i desne strane izraza dodele nisu kompatibilni.", null);
+           isOk = false;
+        }
 
-        } else if(!TabUtils.assignableTo(d.getType(), s)){
+        if(!TabUtils.assignableTo(d.getType(), s)){
 
             report_error("Semanticka greska na liniji " + dleft + " : promenljive sa leve i desne strane izraza dodele nisu kompatibilni.", null);
-
-        } else {
-
-            isOk = true;
+            isOk = false;
         }
+
         return isOk;
     }
 
     public boolean checkIncDecExpr(Obj d, int dleft) {
 
-        boolean isOk = false;
+        boolean isOk = true;
 
         if(!isAssignableType(d)) {
 
            report_error("Semanticka greska na liniji " + dleft + " : ime u increment/decrement izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+           isOk = false;
+        }
 
-        } else if(!Tab.intType.equals(d.getType())){
+        if(!Tab.intType.equals(d.getType())){
 
             report_error("Semanticka greska na liniji " + dleft + " : increment/decrement izraz mora biti tipa int.", null);
-
-        } else {
-
-            isOk = true;
+            isOk = false;
         }
+
         return isOk;
     }
 
@@ -812,7 +817,7 @@ ConstDecl ::= ConstDeclSemi SEMI
               |
               error SEMI:e
               {:
-                 parser.report_error("Sintaksna greska prilikom definicije glob. konstante na liniji "+ eleft + " izvrsen oporavak do ; ", null);
+                 parser.report_error("Sintaksna greska na liniji "+ eleft + " : prilikom definicije glob. konstante, izvrsen oporavak do ; ", null);
               :};
 
 ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
@@ -821,7 +826,7 @@ ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
                      |
                   error COMMA:l
                    {:
-                      parser.report_error("Sintaksna greska prilikom definicije glob. konstante na liniji " + lleft + " izvrsen oporavak do , ", null);
+                      parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom definicije glob. konstante, izvrsen oporavak do , ", null);
                    :};
 
 ConstDeclPart ::= IDENT:id EQUAL NUMBER:num
@@ -869,14 +874,14 @@ VarPart_Semi_Recovery ::= VarPart SEMI
                           |
                           error SEMI:l
                           {:
-                            parser.report_error("Sintaksna greska prilikom definicije glob. prom. na liniji " + lleft + " izvrsen oporavak do ;", null);
+                            parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom definicije glob. prom., izvrsen oporavak do ;", null);
                           :};
 
 VarPart_Comma_Recovery ::= VarPart COMMA
                            |
                            error COMMA:cl
                            {:
-                               parser.report_error("Sintaksna greska prilikom definicije glob. prom. na liniji " + clleft + " izvrsen oporavak do ,", null);
+                               parser.report_error("Sintaksna greska na liniji " + clleft + " : prilikom definicije glob. prom., izvrsen oporavak do ,", null);
                            :};
 
 VarPart ::= IDENT:id
@@ -936,7 +941,7 @@ ClassExtendsLB_Recovery ::= IDENT:baseClass EXTENDS IDENT:superClass LBRACE
                             |
                             error LBRACE:l
                             {:
-                                parser.report_error("Sintaksna greska prilikom prosirenja nadklase na liniji " + lleft + " izvrsen oporavak do {", null);
+                                parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom prosirenja nadklase, izvrsen oporavak do {", null);
 
                                 RESULT = Tab.noObj;
                                 Tab.openScope();
@@ -954,7 +959,7 @@ ClassVarList_RBRACE_Recovery ::= ClassVarList ClassMethodDecl RBRACE
                                  |
                                  error RBRACE:l
                                  {:
-                                    parser.report_error("Sintaksna greska prilikom definicije atributa klase na liniji " + lleft + " izvrsen oporavak do }", null);
+                                    parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom definicije atributa klase, izvrsen oporavak do }", null);
                                  :};
 
 ClassVarList ::= ClassVarList ClassVarPart
@@ -965,7 +970,7 @@ ClassVarPart ::= C_VarDecl SEMI
                  |
                  error SEMI:l
                  {:
-                     parser.report_error("Sintaksna greska prilikom definicije atributa klase na liniji " + lleft + " izvrsen oporavak do ;", null);
+                     parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom definicije atributa klase, izvrsen oporavak do ;", null);
                  :};
 
 C_VarDecl ::=  Type:typeName
@@ -1053,7 +1058,8 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
 
                      TabUtils.hasAbstractMethod = true;
 
-                     parser.countMethods(scope);
+                     // ne broji se posto su abstraktne metode, deklaracije a ne definicije
+                     // parser.countMethods(scope);
 
                      parser.setMethodParams(methName);
 
@@ -1079,7 +1085,7 @@ LocalVarDecl_Semi_Recovery ::= Type:typeName
                                |
                                error SEMI:l
                                {:
-                                    parser.report_error("Sintaksna greska prilikom definicije lokalnih prom. metode na liniji " + lleft + " izvrsen oporavak do ;", null);
+                                    parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom definicije lokalnih prom. metode, izvrsen oporavak do ;", null);
                                :};
 
 
@@ -1087,7 +1093,7 @@ LocalVarDecl_Lbrace_Recovery ::= LocalVarDecl_Semi_Recovery LBRACE
                                  |
                                  error LBRACE:l
                                  {:
-                                     parser.report_error("Sintaksna greska prilikom deklaracije lokalnih prom. na liniji " + lleft + " izvrsen oporavak do {", null);
+                                     parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom deklaracije lokalnih prom., izvrsen oporavak do {", null);
                                  :};
 
 M_VarList ::= M_VarList COMMA VarPart
@@ -1117,7 +1123,7 @@ FormalParamDecl_Comma_Recovery ::= FormalParamType VarPart COMMA
                                    |
                                    error COMMA:l
                                    {:
-                                       parser.report_error("Sintaksna greska prilikom deklaracije formalnih prom na liniji " + lleft + " izvrsen oporavak do ,", null);
+                                       parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom deklaracije formalnih prom, izvrsen oporavak do ,", null);
                                    :};
 
 FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
@@ -1127,7 +1133,7 @@ FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
                                     |
                                     error RPAREN:l
                                     {:
-                                        parser.report_error("Sintaksna greska prilikom deklaracije formalnih prom na liniji " + lleft + " izvrsen oporavak do )", null);
+                                        parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom deklaracije formalnih prom, izvrsen oporavak do )", null);
                                     :};
 
 FormalParamType ::= Type:typeName
@@ -1227,7 +1233,7 @@ Brace_condition ::= LPAREN Condition:c RPAREN
                     |
                     error RPAREN:l
                     {:
-                        parser.report_error("Sintaksna greska logickog izraza unutar if ili while konstrukcije na liniji " + lleft + " izvrsen oporavak do prvog znaka )",null);
+                        parser.report_error("Sintaksna greska na liniji " + lleft + " : logickog izraza unutar if ili while konstrukcije, izvrsen oporavak do prvog znaka )",null);
                         TabUtils.conditionError = true;
                         RESULT = false;
                     :};
@@ -1246,7 +1252,7 @@ Dodela ::= 	Expr:e SEMI
             error SEMI:l
             {:
 
-                parser.report_error("Sintaksna greska prilikom dodele vrednosti na liniji " + lleft + " izvrsen oporavak do ;",null);
+                parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom dodele vrednosti, izvrsen oporavak do ;",null);
                 RESULT = Tab.noType;
 
             :};
@@ -1281,7 +1287,7 @@ FuncCalls ::= ProgramFunc:func ActualPars_Rparen_Recovery:ap SEMI
               |
               error SEMI:l
               {:
-                  parser.report_error("Sintaksna greska prilikom poziva funkcije na liniji " + lleft + " izvrsen oporavak do ;",null);
+                  parser.report_error("Sintaksna greska na liniji " + lleft + " : prilikom poziva funkcije, izvrsen oporavak do ;",null);
               :};
 
 Condition ::= CondTermOR:cor {: RESULT = cor; :};
@@ -1417,7 +1423,7 @@ ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
                                |
                                error RPAREN:l
                                {:
-                                  parser.report_error("Sintaksna greska u listi parametara pri pozivu f-je na liniji " + lleft + " izvrsen oporavak do )",null);
+                                  parser.report_error("Sintaksna greska na liniji " + lleft + " : u listi parametara pri pozivu f-je, izvrsen oporavak do )",null);
                                :};
 
 
@@ -1473,7 +1479,7 @@ ExprInSquaresRS_Recovery ::= LSQUARE Expr:e RSQUARE
                              |
                              error RSQUARE:l
                              {:
-                                parser.report_error("Sintaksna greska izraza za index. niza na liniji " + lleft + " izvrsen oporavak do ]",null);
+                                parser.report_error("Sintaksna greska na liniji " + lleft + " : izraza za index. niza, izvrsen oporavak do ]",null);
                              :};
 
 DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
