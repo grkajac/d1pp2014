@@ -31,11 +31,10 @@ public class TabUtils {
     public static Obj currentMethodObj = Tab.noObj;
     public static Obj currentClassObj = Tab.noObj;
     public static Struct currentVarType = Tab.noType;
-    public static Struct currentMethodType = Tab.noType;
-    public static Struct returnType = Tab.noType;
 
     public static boolean returnFound = false;
     public static boolean isVoid = false;
+    public static boolean isMethodExist = false;
 
     // Broj formalnih argumenata
     public static int formalParamCount = 0;
@@ -53,13 +52,11 @@ public class TabUtils {
 
     // abstract classes
     public static Map<String, Obj> abstractClasses = new HashMap<String, Obj>();
-    public static Map<String, String> extendedClasses = new HashMap<String, String>();
+    public static Map<String, String> abstractMethods = new HashMap<String, String>();
+//    public static Map<String, Obj> extendedClasses = new HashMap<String, Obj>();
     public static String currentTypeNameUses;
     public static boolean hasAbstractMethod = false;
 
-    public static void insertParam(){
-
-    }
 
     public static boolean isAbstractClass(){
 
@@ -68,7 +65,7 @@ public class TabUtils {
 
     public static String printObj(Obj obj){
 
-        DumpSymbolTableVisitorWithBool visitor = new DumpSymbolTableVisitorWithBool();
+        DumpSymbolTableVisitor visitor = new DumpSymbolTableVisitor();
         visitor.visitObjNode(obj);
 
         return visitor.getOutput();
@@ -80,6 +77,7 @@ public class TabUtils {
         formalParamCount = 0;
         formalParamPosition = 0;
         currentMethodObj = Tab.noObj;
+        isMethodExist = false;
     }
 
     /**
@@ -89,62 +87,169 @@ public class TabUtils {
     public static boolean assignableTo(Struct dest, Struct src){
         boolean result = src.assignableTo(dest)
                 ||
-                (equalsCompleteHash(dest.getMembersTable(), src.getMembersTable()))
+                (dest.getKind() == Struct.Array && dest.getElemType().getKind() == Struct.Char && src.getElemType() == stringType)
                 ||
-                (dest.getKind() == Struct.Array && dest.getElemType().getKind() == Struct.Char && src.getElemType() == stringType);
+                (equalsClassRefs(dest, src));
 
         return result;
     }
 
     /**
-     * Poredi da li je src hes tabela sadrzi sve elemente iz dest hes tabele.
-     * Metoda je korisna kada proveravamo da li izvedena klasa sadrzi sve clanove iz osnovne klase.
+     * Poredi da li je dest dodeljiv src po tipu klasa,
+     * dest osnovna, src izvedene klase iz osnovne.
      */
-    public static boolean equalsCompleteHash(SymbolDataStructure dest, SymbolDataStructure src) {
+    public static boolean equalsClassRefs(Struct dest, Struct src) {
 
-        if (dest == null || src == null)
-            return false;
+        boolean result = false;
 
-        if (dest.numSymbols() < src.numSymbols()) {
-            Collection<Obj> destObj = dest.symbols(), srcObj = src.symbols();
-            Iterator<Obj> itdest = destObj.iterator(), itsrc = srcObj.iterator();
+        Obj srcSuperClassObj = src.getMembersTable().searchKey("super");
 
-            while (itdest.hasNext()) {
-                if (!itdest.next().equals(itsrc.next()))
-                    return false;
+        while (srcSuperClassObj != null) {
+
+            if(dest.equals(srcSuperClassObj.getType())){
+                result = true;
             }
-            return true;
+
+            srcSuperClassObj = srcSuperClassObj.getType().getMembersTable().searchKey("super");
         }
-        else {
-            return false;
-        }
+
+        return result;
     }
 
     /**
-     * Postavlja clanove osnovne klase na pocetak niza clanova izvedene klase
-     *
-     * @param extended   Obj izvedene klase
-     * @param base       Obj osnovne klase
+     * Metoda trazi polje u klasi ili klasama roditelja za
+     * klasu koja je u procesu definicije.
+     * @param fieldName
+     * @return
      */
-    public static void copyBaseClassMembersToExtendedClass(Obj extended, Obj base){
+    public static Obj findVarFromClassMethod(String fieldName) {
 
-            // setLocals je namerno implementirano, zato sto na pocetku svi ovi elementi
-            // treba da se nadju u trenutnom opsegu da bi se omogucila pretraga trenutnog opsega koji
-            // je u ovom slucaju klasa
+        // trazi u lokalnom opsegu
+        Obj finded = findInCurrentScope(fieldName);
 
-            // kada se zavrsi sa obradom osnovne klase, svi lokalni elementi ce se prebaciti u
-            // Struct.memeber-e
+        if(Tab.noObj.equals(finded)) {
 
+            // ako nema u lokalno opsegu, trazi u klasi koja se trenutno
+            // obradjuje i njenoj nadklasi
+            finded =  findInCurrentClassAndSuperClasses(fieldName);
 
-            extended.setLocals(base.getType().getMembersTable());
+        } else {
+
+            return finded;
+
+        }
+
+        // ukoliko je nema ni tamo, trazi u globalnom opsegu
+        return (Tab.noObj.equals(finded)) ?  Tab.find(fieldName) : finded;
     }
 
     /**
-     * Potrebno uraditi
+     * Podrazumeva se da smo u klasom opsegu.
+     * Nalazi Obj u klasi koja je u procesu definicije.
      *
-     * 1. Poredjenje clanova osnovne i super klase, tako sto treba proveriti da li
-     *    osnovna klasa sadrzi sve clanove super klase.
+     * @param fieldName ime polja koje se trazi.
+     * @return
+     */
+    public static Obj findInCurrentClassAndSuperClasses(String fieldName) {
+
+        Obj findedObj = Tab.currentScope.getOuter().findSymbol(fieldName);
+
+        Obj superClassObj = Tab.currentScope.getOuter().findSymbol("super");
+
+        superClassObj = (superClassObj == null) ? Tab.noObj : superClassObj;
+
+        // Onda se trazi u roditeljskim klasama rekurzivno
+        return (findedObj == null) ? findInSuperClasses(fieldName, superClassObj) : findedObj;
+    }
+
+    /**
+     * Nalazi Obj u nadklasama za zadati objekat.
      *
-     * 2. Presipanje clanova super klase u osnovnu klasu
+     * @param fieldName ime polja.
+     * @param classObj obj klase za koju se trazi polje u nadklasama.
+     * @return
+     */
+    public static Obj findInSuperClasses(String fieldName, Obj classObj) {
+
+        Obj findedObj = null;
+
+        String currentClassName;
+        Obj currentSuperClassObj = classObj;//getSuperClass(classObj.getName());
+
+        while(!Tab.noObj.equals(currentSuperClassObj)) {
+
+            findedObj = currentSuperClassObj.getType().getMembersTable().searchKey(fieldName);
+
+            if(findedObj != null) {
+                break;
+            }
+
+            currentSuperClassObj = getSuperClass(currentSuperClassObj);
+        }
+
+        return (findedObj == null) ? Tab.noObj : findedObj;
+    }
+
+    /**
+     * Metoda trazi polje u klasi ili klasama roditelja za klasu koja je vec definisana.
+     * @param fieldName
+     * @return
+     */
+    public static Obj findFieldInClassAndSuperClasses(String fieldName, Obj currClass) {
+
+        // Pretraga u klasi koja je data kao argument metode
+        Obj findedObj = currClass.getType().getMembersTable().searchKey(fieldName);
+
+        Obj superClassObj = currClass.getType().getMembersTable().searchKey("super");
+
+        superClassObj = (superClassObj == null) ? Tab.noObj : superClassObj;
+
+        // Onda se trazi u roditeljskim klasama rekurzivno
+        return (findedObj == null) ? findInSuperClasses(fieldName, superClassObj) : findedObj;
+    }
+
+    /**
+     * Nalazi Obj u trenutnom opsegu.
+     *
+     * @param fieldName ime polja koje se trazi.
+     * @return
+     */
+    public static Obj findInCurrentScope(String fieldName) {
+
+        Obj findedObj = Tab.currentScope.findSymbol(fieldName);
+
+        return (findedObj == null) ? Tab.noObj : findedObj;
+    }
+
+    /**
+     * Nalazi Obj roditeljske klase za izvedenu ako postoji,
+     * ako ne postoji vraca Tab.noObj
+     *
+     * @param classObj ime osnovne klase.
+     * @return
+     */
+    public static Obj getSuperClass(Obj classObj) {
+
+        Obj findedObj = classObj.getType().getMembersTable().searchKey("super");//extendedClasses.get(className);
+
+        if(findedObj == null) {
+            findedObj = Tab.noObj;
+        }
+
+        return findedObj;
+    }
+
+    /**
+     * Postoje klase koje su:
+     *
+     *  1. Definisane
+     *  2. Koje su u procesu definicije.
+     *
+     *  1. Kod definisanih klasa trazenje polja se svodi na trazenje polja u njenom opsegu i
+     *     opsegu njenih nadklase koje su u extendedClasses mapi.
+     *
+     *  2. Kod klasa koje su u procesu definicije, polje koje trazimo nije prebaceno u opseg klase
+     *     (to se radi na kraju obrade , Tab.chainLocalSymbols(classObj.getType())) vec treba traziti po opsezima.
+     *     Trenutnom opsegu, opsegu iznad, opsegu nadklasa i na kraju globalnom opsegu.
      */
 }

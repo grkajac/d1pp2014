@@ -7,6 +7,7 @@ import org.apache.log4j.*;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 
@@ -160,7 +161,9 @@ parser code {:
 
                     prom = Tab.insert(Obj.Fld, id, type);
                     innerClassAttributesCount++;
-                    report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+                    if(!"this".equals(id) && !"super".equals(id)) {
+                        report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+                    }
                     break;
 
                 case METHOD_LOCAL_VAR:
@@ -187,7 +190,9 @@ parser code {:
 
                     prom = Tab.insert(Obj.Fld, id, new Struct(Struct.Array, type));
                     innerClassAttributesCount++;
-                    report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+                    if(!"this".equals(id) && !"super".equals(id)) {
+                        report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+                    }
                     break;
 
                 case METHOD_LOCAL_ARRAY_VAR:
@@ -236,27 +241,32 @@ parser code {:
         return result;
     }
 
-    public Obj classProcessing(String baseClass, int baseClassleft, String superClass, int superClassleft){
+    public Obj classProcessing(String baseClass, int baseClassleft){
 
         Obj returnObj = Tab.noObj;
-
-        Obj superObj = superClassProcessing(superClass, superClassleft);
 
         Obj baseClassObj = Tab.find(baseClass);
         if(Tab.noObj.equals(baseClassObj)){
 
             TabUtils.currentClassObj = Tab.insert(Obj.Type, baseClass, new Struct(Struct.Class));
 
-            if(!Tab.noObj.equals(superObj)){
-                TabUtils.copyBaseClassMembersToExtendedClass(TabUtils.currentClassObj, superObj);
-            }
-
             returnObj = TabUtils.currentClassObj;
+
             innerClassesCount++;
         }else {
             report_error("Semanticka greska na liniji " + baseClassleft + " : [R84] Ime klase je vec definisano", null);
         }
         return returnObj;
+    }
+
+    public void addSuperFieldIntoClass(String superClass, Obj baseClass, int superClassleft) {
+
+        Obj superObj = superClassProcessing(superClass, superClassleft);
+
+        if(!Tab.noObj.equals(superObj) && !Tab.noObj.equals(baseClass)){
+
+            varProcessing("super", 777, superObj.getType(), VarNode.CLASS_VAR);
+        }
     }
 
     public boolean addAbstractClass(Obj absClass, ScopeNode scope){
@@ -309,9 +319,23 @@ parser code {:
         }
     }
 
-    public Obj getDesignator(String name, int nameleft){
+    public Obj getDesignator(String name, int nameleft, ScopeNode scope){
 
-        Obj obj = Tab.find(name);
+        Obj obj = Tab.noObj;
+
+        // prvo trazi u unutrasnjim klasama ako si u dosegu
+        if(ScopeNode.CLASS.equals(scope) || ScopeNode.ABSTRACT_CLASS.equals(scope)) {
+
+            obj = TabUtils.findVarFromClassMethod(name);
+        } else {
+
+           obj = Tab.find(name);
+
+           if("this".equals(obj.getName())) {
+              report_error("Semanticka greska na liniji " + nameleft + " : ime 'this' ne sme se koristiti u globalnom opsegu! ", null);
+              return Tab.noObj;
+           }
+        }
 
         if(Tab.noObj.equals(obj)){
             report_error("Semanticka greska na liniji " + nameleft + " : ime '" + name + "' nije deklarisano! ", null);
@@ -327,30 +351,34 @@ parser code {:
 
         if(className.getName().equals("this")){
 
-             field = Tab.currentScope.getOuter().findSymbol(fieldName);
+             // field = Tab.currentScope.getOuter().findSymbol(fieldName);
+             field = TabUtils.findInCurrentClassAndSuperClasses(fieldName);
         } else {
 
-             field = className.getType().getMembersTable().searchKey(fieldName);
+             // field = className.getType().getMembersTable().searchKey(fieldName);
+             field = TabUtils.findFieldInClassAndSuperClasses(fieldName, className);
         }
 
         return field;
     }
 
-    public Obj getClassDesignator(String name, int nameleft){
+    public Obj getClassDesignator(String name, int nameleft) {
 
         Obj result = Tab.noObj;
         Obj className = TabUtils.currentDesignatorObj;
 
-        if(className.getType().getKind() != Struct.Class){
+        if(className.getType().getKind() != Struct.Class) {
              report_error("Semanticka greska na liniji " + nameleft + " : ime " + className.getName() + " mora biti unutrasnja klasa! ", null);
              return result;
         }
 
         Obj classElement = getFieldFromClass(name, className);
 
-        if(classElement == null){
+        if(Tab.noObj.equals(classElement)) {
+
            report_error("Semanticka greska na liniji " + nameleft + " : ime " + name + " nije deklarisano unutar klase! ", null);
-        }else{
+
+        } else {
 
            TabUtils.currentDesignatorObj = classElement;
            result = classElement;
@@ -478,6 +506,14 @@ parser code {:
           Iterator<Obj> formalParams = func.getLocalSymbols().iterator();
           int counter = 1;
 
+          // preskacemo this 0 parametar
+          Collection<Obj> funcLocals = func.getLocalSymbols();
+          Obj thisObj = (funcLocals.isEmpty()) ? Tab.noObj : ((Obj)funcLocals.toArray()[0]);
+
+          if("this".equals(thisObj.getName())) {
+              formalParams.next();
+          }
+
           while(actualParams.hasNext() && formalParams.hasNext()) {
 
               if(!TabUtils.assignableTo(actualParams.next(), formalParams.next().getType())) {
@@ -492,7 +528,7 @@ parser code {:
       return isOK;
    }
 
-    public Struct checkFunc(Obj func, int funcleft) {
+    public Struct checkFunc(Obj func, int funcleft, ScopeNode scope) {
 
         Struct result = Tab.noType;
 
@@ -505,9 +541,10 @@ parser code {:
         // treba nam ova provera zbog this argumenta kod klasa
         int actParamNum = TabUtils.actualParams.size();
 
-        if(func.getLocalSymbols().isEmpty() == false &&
-           ((Obj)func.getLocalSymbols().toArray()[0]).getName().equals("this")) {
+        Collection<Obj> funcLocals = func.getLocalSymbols();
+        Obj thisObj = (funcLocals.isEmpty()) ? Tab.noObj : ((Obj)funcLocals.toArray()[0]);
 
+        if("this".equals(thisObj.getName())) {
              actParamNum++;
         }
 
@@ -527,7 +564,11 @@ parser code {:
         }
 
         // ispis poruke koriscenja globalne funkcije / metode unutrasnje klase
-        if(TabUtils.isSingleName){
+        // TODO sredi ovaj budz
+        String fName = func.getName();
+        boolean isGlobalMethod = (Tab.currentScope().getOuter().findSymbol(fName) != null) ? true : false;
+        boolean initFunc = ("chr".equals(fName) || "ord".equals(fName) || "len".equals(fName)) ? true : false;
+        if((ScopeNode.GLOBAL.equals(scope) && isGlobalMethod && TabUtils.isSingleName) || initFunc){
 
             report_info("Poziv globalne funkcije na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
 
@@ -541,7 +582,7 @@ parser code {:
 
     public boolean checkRefTypeOperator(Struct exp1, Struct exp2, int op) {
 
-        return (exp1.isRefType() && exp2.isRefType() && (op == 0 || op == 1)) ? true : false;
+        return (exp1.isRefType() && exp2.isRefType() && op != 0 && op != 1) ? true : false;
     }
 
     public boolean condFactCheck(Struct exp1, Struct exp2, int exp1left, int op) {
@@ -585,7 +626,6 @@ parser code {:
            if(TabUtils.hasMainFunc) {
                 functionCallsInMainCount++;
            }
-
         }
     }
 
@@ -651,7 +691,7 @@ parser code {:
 
     public void checkMainFunction(int mleft) {
 
-        if(!Tab.noObj.equals(TabUtils.currentMethodObj) && TabUtils.currentMethodObj.getName().equals("main")){
+        if(!Tab.noObj.equals(TabUtils.currentMethodObj) && "main".equals(TabUtils.currentMethodObj.getName())){
 
             if(Tab.currentScope().getnVars() > 0) {
 
@@ -669,6 +709,35 @@ parser code {:
 
         if(!TabUtils.currentMethodObj.getType().equals(exp)) {
             report_error("Semanticka greska na liniji " + expleft + " : povratni tip metode se ne slaze sa tipom return izraza.", null);
+        }
+    }
+
+    public boolean findMethodName(String methName, int methNameleft) {
+
+        boolean result = false;
+
+        if(methName.equals("main")) {
+            TabUtils.hasMainFunc = true;
+        }
+
+        Obj findedMeth = Tab.currentScope.findSymbol(methName);
+
+        if(findedMeth != null) {
+            report_error("Semanticka greska na liniji " + methNameleft + " : metoda je vec deklarisana.", null);
+            result = true;
+        }
+
+        return result;
+    }
+
+    public void checkReturnExp(String methName){
+
+        if(!TabUtils.returnFound && !TabUtils.isVoid) {
+            report_error("Semanticka greska - nije nadjen return izraz za metodu '" + methName + "'.", null);
+        }
+
+        if(TabUtils.returnFound && TabUtils.isVoid) {
+            report_error("Semanticka greska - nadjen return izraz za metodu '" + methName + "' koja je void.", null);
         }
     }
 
@@ -924,18 +993,25 @@ ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
                  }
 
                  Tab.closeScope();
+
+                 TabUtils.currentClassObj = Tab.noObj;
+
                  scope = ScopeNode.GLOBAL;
               :};
 
 ClassExtendsLB_Recovery ::= IDENT:baseClass EXTENDS IDENT:superClass LBRACE
                             {:
-                                RESULT = parser.classProcessing(baseClass, baseClassleft, superClass, superClassleft);
+                                RESULT = parser.classProcessing(baseClass, baseClassleft);
+
                                 Tab.openScope();
+
+                                parser.addSuperFieldIntoClass(superClass, RESULT, superClassleft);
                             :}
                             |
                             IDENT:baseClass LBRACE
                             {:
-                                RESULT = parser.classProcessing(baseClass, baseClassleft, null, -1);
+                                RESULT = parser.classProcessing(baseClass, baseClassleft);
+
                                 Tab.openScope();
                             :}
                             |
@@ -1016,11 +1092,10 @@ MethodRetType ::= Type:retType
 
 MethodName ::= MethodRetType:retType IDENT:methName
                 {:
-                    if(methName.equals("main")) {
-                        TabUtils.hasMainFunc = true;
-                    }
+                    TabUtils.isMethodExist = parser.findMethodName(methName, methNameleft);
 
                     RESULT = Tab.insert(Obj.Meth, methName, retType);
+
                     TabUtils.currentMethodObj = RESULT;
                     Tab.openScope();
 
@@ -1041,9 +1116,12 @@ MethodVarDeclLB_Recovery ::= MethodVarDeclList:m
 MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_Recovery AllStatements RBRACE
                    {:
 
-                      parser.countMethods(scope);
+                      if(!TabUtils.isMethodExist) {
 
-                      parser.setMethodParams(methName);
+                          parser.countMethods(scope);
+                          parser.checkReturnExp(methName.getName());
+                          parser.setMethodParams(methName);
+                      }
 
                       TabUtils.resetMethodsFlags();
 
@@ -1061,7 +1139,11 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                      // ne broji se posto su abstraktne metode, deklaracije a ne definicije
                      // parser.countMethods(scope);
 
-                     parser.setMethodParams(methName);
+                     if(!TabUtils.isMethodExist) {
+                         parser.checkReturnExp(methName.getName());
+                         parser.setMethodParams(methName);
+                         TabUtils.abstractMethods.put(TabUtils.currentClassObj.getName(), methName.getName());
+                     }
 
                      TabUtils.resetMethodsFlags();
 
@@ -1266,7 +1348,7 @@ ProgramFunc ::= Designator:d LPAREN
 
 FuncCalls ::= ProgramFunc:func ActualPars_Rparen_Recovery:ap SEMI
               {:
-                   RESULT = parser.checkFunc(func, funcleft);
+                   RESULT = parser.checkFunc(func, funcleft, scope);
               :}
               |
               READ LPAREN Designator:d RPAREN SEMI
@@ -1413,7 +1495,7 @@ Factor ::= NUMBER
            |
            ProgramFunc:func ActualPars_Rparen_Recovery:ap
            {:
-               RESULT = parser.checkFunc(func, funcleft);
+               RESULT = parser.checkFunc(func, funcleft, scope);
            :};
 
 ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
@@ -1445,7 +1527,7 @@ Designator ::= IDENT:name
                 {:
                     TabUtils.isSingleName = false;
 
-                    TabUtils.currentDesignatorObj = parser.getDesignator(name, nameleft);
+                    TabUtils.currentDesignatorObj = parser.getDesignator(name, nameleft, scope);
                 :}
                 DesignatorList:dsList
                 {:
@@ -1457,7 +1539,7 @@ Designator ::= IDENT:name
                 {:
                     TabUtils.isSingleName = true;
 
-                    RESULT = parser.getDesignator(name, nameleft);
+                    RESULT = parser.getDesignator(name, nameleft, scope);
                 :};
 
 DesignatorList ::= DesignatorList DesignatorPart:dlp

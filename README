@@ -2,4 +2,8 @@
 
 TODO
 
-1. Think about putting all strings in one container like Flyweight design pattern
+1. Odraditi proveru da li su implementirane apstraktne metode u klasama koje implementiraju apstraktne klase.
+
+2. Odraditi obradu relop dela.
+
+3. Okloniti obradu da li postoji return izraz u apstraktnim metodama.
