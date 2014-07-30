@@ -1,0 +1,376 @@
+[
+    {
+        "name": "test01.mj",
+        "brojanje": {
+            "glob_promenljivih": 7,
+            "glob_nizova": 0,
+            "funkcija": 1,
+            "un_klasa": 0,
+            "blokova_naredbi": 3,
+            "poziva_funkcija": 2,
+            "instanciranja": 0,
+            "metoda": 0,
+            "atributa": 0,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [],
+        "semanticErrorList": []
+    },
+    {
+        "name": "test02.mj",
+        "brojanje": {
+            "glob_promenljivih": 3,
+            "glob_nizova": 0,
+            "funkcija": 1,
+            "un_klasa": 0,
+            "blokova_naredbi": 1,
+            "poziva_funkcija": 3,
+            "instanciranja": 0,
+            "metoda": 0,
+            "atributa": 0,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [
+            { "line": 4, "description": "1S-00" },
+            { "line": 7, "description": "1S-02" },
+            { "line": 10, "description": "1S-08" },
+            { "line": 15, "description": "1S-11" }
+        ],
+        "semanticErrorList": [
+            { "line": 0, "description": "2S-01" },
+            { "line": 8, "description": "2S-09" },
+            { "line": 10, "description": "2S-14" },
+            { "line": 13, "description": "2S-30" },
+
+            { "line": 14, "description": "2S-36" },
+            { "line": 14, "description": "2S-20" },
+
+            { "line": 17, "description": "2S-36" },
+            { "line": 17, "description": "2S-20" },
+
+            { "line": 19, "description": "2S-42" },
+            { "line": 19, "description": "2S-28" },
+
+            { "line": 20, "description": "2S-42" },
+            { "line": 20, "description": "2S-22" },
+
+            { "line": 21, "description": "2S-42" },
+            { "line": 21, "description": "2S-29" }
+        ]
+    },
+    {
+        "name": "test03.mj",
+        "brojanje": {
+            "glob_promenljivih": 3,
+            "glob_nizova": 0,
+            "funkcija": 1,
+            "un_klasa": 0,
+            "blokova_naredbi": 1,
+            "poziva_funkcija": 1,
+            "instanciranja": 0,
+            "metoda": 0,
+            "atributa": 0,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [],
+        "semanticErrorList": [
+            { "line": 10, "description": "2S-27" },
+            { "line": 11, "description": "2S-19" },
+            { "line": 13, "description": "2S-30" },
+            { "line": 14, "description": "2S-20" },
+            { "line": 17, "description": "2S-24" }
+        ]
+    },
+    {
+        "name": "test04.mj",
+        "brojanje": {
+            "glob_promenljivih": 4,
+            "glob_nizova": 1,
+            "funkcija": 2,
+            "un_klasa": 0,
+            "blokova_naredbi": 1,
+            "poziva_funkcija": 5,
+            "instanciranja": 1,
+            "metoda": 0,
+            "atributa": 0,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [],
+        "semanticErrorList": []
+    },
+    {
+        "name": "test05.mj",
+        "brojanje": {
+            "glob_promenljivih": 9,
+            "glob_nizova": 0,
+            "funkcija": 6,
+            "un_klasa": 0,
+            "blokova_naredbi": 2,
+            "poziva_funkcija": 10,
+            "instanciranja": 0,
+            "metoda": 0,
+            "atributa": 0,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [
+            { "line": 6, "description": "1S-02" },
+            { "line": 30, "description": "1S-10" },
+            { "line": 34, "description": "1S-08" },
+            { "line": 39, "description": "1S-14" }
+        ],
+        "semanticErrorList": [
+            { "line": 4, "description": "2S-09" },
+
+            { "line": 10, "description": "2S-42" },
+            { "line": 10, "description": "2S-42" },
+            { "line": 10, "description": "2S-25" },
+            { "line": 10, "description": "2S-42" },
+            { "line": 10, "description": "2S-25" },
+            { "line": 10, "description": "2S-34" },
+            { "line": 10, "description": "2S-25" },
+            { "line": 0, "description": "2S-16" },
+
+            { "line": 14, "description": "2S-20" },
+            { "line": 15, "description": "2S-23" },
+
+            { "line": 19, "description": "2S-20" },
+            { "line": 20, "description": "2S-23" },
+            { "line": 0, "description": "2S-17" },
+
+            { "line": 26, "description": "2S-13" },
+
+            { "line": 0, "description": "2S-01" },
+
+            { "line": 34, "description": "2S-14" },
+            { "line": 34, "description": "2S-15" },
+
+            { "line": 37, "description": "2S-42" },
+            { "line": 37, "description": "2S-28" },
+
+            { "line": 39, "description": "2S-42" },
+            { "line": 39, "description": "2S-42" },
+            { "line": 39, "description": "2S-42" },
+            { "line": 39, "description": "2S-25" },
+
+            { "line": 41, "description": "2S-47" },
+
+            { "line": 43, "description": "2S-42" },
+            { "line": 43, "description": "2S-47" },
+            { "line": 43, "description": "2S-20" },
+
+            { "line": 46, "description": "2S-42" },
+            { "line": 46, "description": "2S-42" },
+            { "line": 46, "description": "2S-26" },
+            { "line": 46, "description": "2S-47" },
+            { "line": 46, "description": "2S-20" },
+
+            { "line": 49, "description": "2S-26" },
+            { "line": 49, "description": "2S-47" },
+            { "line": 49, "description": "2S-47" },
+
+            { "line": 50, "description": "2S-42" },
+            { "line": 50, "description": "2S-47" },
+            { "line": 50, "description": "2S-47" },
+
+            { "line": 0, "description": "2S-16" }
+        ]
+    },
+    {
+        "name": "test06.mj",
+        "brojanje": {
+            "glob_promenljivih": 3,
+            "glob_nizova": 4,
+            "funkcija": 1,
+            "un_klasa": 0,
+            "blokova_naredbi": 0,
+            "poziva_funkcija": 3,
+            "instanciranja": 2,
+            "metoda": 0,
+            "atributa": 0,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [
+            { "line": 11, "description": "1S-15" },
+            { "line": 16, "description": "1S-12" }
+        ],
+        "semanticErrorList": [
+            { "line": 10, "description": "2S-20" },
+
+            { "line": 12, "description": "2S-43" },
+
+            { "line": 13, "description": "2S-33" },
+            { "line": 13, "description": "2S-20" },
+
+            { "line": 16, "description": "2S-20" },
+
+            { "line": 17, "description": "2S-47" },
+
+            { "line": 19, "description": "2S-29" }
+        ]
+    },
+    {
+        "name": "test07.mj",
+        "brojanje": {
+            "glob_promenljivih": 2,
+            "glob_nizova": 1,
+            "funkcija": 7,
+            "un_klasa": 1,
+            "blokova_naredbi": 1,
+            "poziva_funkcija": 3,
+            "instanciranja": 0,
+            "metoda": 4,
+            "atributa": 3,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [],
+        "semanticErrorList": []
+    },
+    {
+        "name": "test08.mj",
+        "brojanje": {
+            "glob_promenljivih": 1,
+            "glob_nizova": 0,
+            "funkcija": 1,
+            "un_klasa": 3,
+            "blokova_naredbi": 0,
+            "poziva_funkcija": 0,
+            "instanciranja": 2,
+            "metoda": 4,
+            "atributa": 5,
+            "izvodjenja": 1
+        },
+        "syntaxErrorList": [],
+        "semanticErrorList": [
+            { "line": 5, "description": "2S-11" },
+            { "line": 7, "description": "2S-09" },
+
+            { "line": 0, "description": "2S-01" },
+            { "line": 8, "description": "2S-08" },
+
+            { "line": 0, "description": "2S-01" },
+            { "line": 9, "description": "2S-08" },
+
+            { "line": 17, "description": "2S-20" },
+            { "line": 18, "description": "2S-20" },
+
+            { "line": 19, "description": "2S-46" },
+            { "line": 19, "description": "2S-20" },
+
+            { "line": 20, "description": "2S-20" },
+            { "line": 21, "description": "2S-23" },
+
+            { "line": 54, "description": "2S-42" },
+            { "line": 54, "description": "2S-20" },
+
+            { "line": 56, "description": "2S-26" },
+
+            { "line": 57, "description": "2S-26" },
+
+            { "line": 58, "description": "2S-47" },
+            { "line": 58, "description": "2S-47" },
+
+            { "line": 59, "description": "2S-47" },
+
+            { "line": 60, "description": "2S-47" },
+
+            { "line": 0, "description": "2S-00" }
+        ]
+    },
+    {
+        "name": "test09.mj",
+        "brojanje": {
+            "glob_promenljivih": 3,
+            "glob_nizova": 0,
+            "funkcija": 1,
+            "un_klasa": 6,
+            "blokova_naredbi": 0,
+            "poziva_funkcija": 4,
+            "instanciranja": 6,
+            "metoda": 5,
+            "atributa": 6,
+            "izvodjenja": 2
+        },
+        "syntaxErrorList": [
+            { "line": 32, "description": "1S-12" },
+            { "line": 71, "description": "1S-05" }
+        ],
+        "semanticErrorList": [
+            { "line": 12, "description": "2S-20" },
+
+            { "line": 14, "description": "2S-23" },
+            { "line": 0, "description": "2S-17" },
+
+            { "line": 21, "description": "2S-13" },
+
+            { "line": 32, "description": "2S-20" },
+            { "line": 33, "description": "2S-20" },
+            { "line": 34, "description": "2S-20" },
+
+            { "line": 48, "description": "2S-42" },
+            { "line": 48, "description": "2S-20" },
+
+            { "line": 49, "description": "2S-30" },
+
+            { "line": 50, "description": "2S-42" },
+            { "line": 50, "description": "2S-43" },
+            { "line": 50, "description": "2S-44" },
+            { "line": 50, "description": "2S-33" },
+
+            { "line": 51, "description": "2S-22" },
+
+            { "line": 0, "description": "2S-16" },
+
+            { "line": 0, "description": "2S-16" },
+
+            { "line": 78, "description": "2S-14" },
+
+            { "line": 81, "description": "2S-20" },
+
+            { "line": 85, "description": "2S-47" },
+            { "line": 85, "description": "2S-47" },
+
+            { "line": 88, "description": "2S-31" },
+
+            { "line": 90, "description": "2S-30" },
+            { "line": 90, "description": "2S-30" }
+        ]
+    },
+    {
+        "name": "test10.mj",
+        "brojanje": {
+            "glob_promenljivih": 0,
+            "glob_nizova": 0,
+            "funkcija": 3,
+            "un_klasa": 3,
+            "blokova_naredbi": 2,
+            "poziva_funkcija": 19,
+            "instanciranja": 6,
+            "metoda": 6,
+            "atributa": 7,
+            "izvodjenja": 2
+        },
+        "syntaxErrorList": [
+            { "line": 46, "description": "1S-06" },
+            { "line": 49, "description": "1S-10" },
+            { "line": 49, "description": "1S-08" },
+            { "line": 56, "description": "1S-04" },
+            { "line": 59, "description": "1S-06" }
+        ],
+        "semanticErrorList": [
+            { "line": 10, "description": "2S-13" },
+
+            { "line": 50, "description": "2S-42" },
+            { "line": 50, "description": "2S-33" },
+            { "line": 0, "description": "2S-17" },
+
+            { "line": 68, "description": "2S-14" },
+
+            { "line": 73, "description": "2S-19" },
+
+            { "line": 74, "description": "2S-32" },
+            { "line": 74, "description": "2S-20" },
+
+            { "line": 109, "description": "2S-48" }
+        ]
+    }
+]

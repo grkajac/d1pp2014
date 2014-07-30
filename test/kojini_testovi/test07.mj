@@ -6,9 +6,9 @@ program Geometrija
 	int rezultati[];
 	int c;
 	
-	abstract class kvadrat
+	class kvadrat
 	{
-		string ime;
+		string name;
 		int a;
 		int b;
 		
@@ -32,11 +32,8 @@ program Geometrija
 			
 			void setIme()
 			{
-				read(ime);
+				read(name);
 			}
-
-			abstract int aca();
-			abstract void pera();
 
 		}
 	}

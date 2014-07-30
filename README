@@ -1,9 +1,23 @@
 # Homework D1PP2014 description
 
-TODO
+- Dependencies:
 
-1. Odraditi proveru da li su implementirane apstraktne metode u klasama koje implementiraju apstraktne klase.
+    1. Jackson 1.9.9 - needed for json
+    2. JUnit 4.1.1   - needed for parametrized tests
+    3. Log4J         - needed for logging
+    4. JFlex 1.4.3
+    5. etf libraries
 
-2. Odraditi obradu relop dela.
+- Testing process workflow
 
-3. Okloniti obradu da li postoji return izraz u apstraktnim metodama.
+    1. In parser specification file we need to mark messages which are generated
+       when syntax and semantic errors occur.
+
+    2. JSON file contains list of all possible grammar errors for every single test
+
+    3. File "logs/testResult.log" contains parser output after single testing.
+       File is actual test result, and grammar errors are pulled from it via regex
+       into TestInfo java class.
+
+    4. JUnit parameterized test compares list of value obtained from json file and
+       list of values obtained from actual parser outputs.

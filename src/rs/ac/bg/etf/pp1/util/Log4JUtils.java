@@ -10,6 +10,8 @@ import java.net.URL;
 public class Log4JUtils {
 
 	private static Log4JUtils logs = new Log4JUtils();
+
+    private static String TEST_RESULT_FILE_NAME = "logs/testResult.log";
 	
 	public static Log4JUtils instance() {
 		return logs;
@@ -40,7 +42,17 @@ public class Log4JUtils {
 		fAppender.setFile(logFile.getAbsolutePath());
 		fAppender.activateOptions();
 	}
-	
-	
-	
+
+	public void prepareLogTestResultFile(Logger root) {
+		Appender appender = root.getAppender("customFile");
+
+		if (!(appender instanceof FileAppender))
+			return;
+		FileAppender fAppender = (FileAppender)appender;
+
+		File logFile = new File(TEST_RESULT_FILE_NAME);
+
+		fAppender.setFile(logFile.getAbsolutePath());
+		fAppender.activateOptions();
+	}
 }

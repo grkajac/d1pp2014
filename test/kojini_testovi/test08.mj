@@ -43,7 +43,6 @@ program test08
 	}
 	
 	Gama g;
-	Beta b;
 {
 	void main2()               //semanticka na kraju, nije definisana main fja
 	Alfa a;
@@ -54,14 +53,9 @@ program test08
 		this = 3;               //semanticka, this nedeklarisan, ne poklapaju se tipovi
 		
 		g.setA(2);              //semanticka, broj parametara se ne poklapa (ovde je visak parametara)
-		g.setAB(2);             //semanticka, isto (ovde je manjak parametara)
-		g.setAB('a', 'b');      //semanticka, ne poklapaju se tipovi oba parametra
-		g.setAB('a',  5);       //semanticka, ne poklapa se tip prvog parametra
-		g.setAB( 5,  'b');      //semanticka, ne poklapa se tip drugog parametra
-
-		b = new Beta;                               // dodato radi provere testiranja
-		b.setA.setA();                              //
-
-		b[123][aca][true]["string"][new Gama]();    //
+		g.setAB(2);              //semanticka, isto (ovde je manjak parametara)
+		g.setAB('a', 'b');       //semanticka, ne poklapaju se tipovi oba parametra
+		g.setAB('a',  5);        //semanticka, ne poklapa se tip prvog parametra
+		g.setAB( 5,  'b');       //semanticka, ne poklapa se tip drugog parametra
 	}
 }	
