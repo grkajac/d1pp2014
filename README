@@ -13,11 +13,12 @@
     1. In parser specification file we need to mark messages which are generated
        when syntax and semantic errors occur.
 
-    2. JSON file contains list of all possible grammar errors for every single test
+    2. JSON file contains list of all possible grammar errors for every single
+       test
 
     3. File "logs/testResult.log" contains parser output after single testing.
-       File is actual test result, and grammar errors are pulled from it via regex
-       into TestInfo java class.
+       File is actual test result, and grammar errors are pulled from it via
+       regex into TestInfo java class.
 
-    4. JUnit parameterized test compares list of value obtained from json file and
-       list of values obtained from actual parser outputs.
+    4. JUnit parameterized test compares list of value obtained from json file
+       and list of values obtained from actual parser outputs.
