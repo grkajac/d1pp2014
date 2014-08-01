@@ -14,7 +14,7 @@ import java.util.Scanner;
 * Time: 8:27 PM
 * To change this template use File | Settings | File Templates.
 */
-public class SingleTesting implements Testing{
+public class SingleTesting implements Testing {
 
     @Override
     public void testing(Logger log) {

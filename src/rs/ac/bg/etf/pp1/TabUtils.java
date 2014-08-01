@@ -57,6 +57,43 @@ public class TabUtils {
     public static String currentTypeNameUses;
     public static boolean hasAbstractMethod = false;
 
+    public static void resetAll() {
+
+          hasMainFunc = false;
+
+          isSingleName = false;
+
+          conditionError = false;
+
+          currentMethodObj = Tab.noObj;
+          currentClassObj = Tab.noObj;
+          currentVarType = Tab.noType;
+
+          returnFound = false;
+          isVoid = false;
+          isMethodExist = false;
+
+        // Broj formalnih argumenata
+          formalParamCount = 0;
+
+        // Redni broj formalnog parametra u metodi
+          formalParamPosition = 0;
+
+        // Broj stvarnih parametara
+          actualParams = new ArrayList<Struct>();
+          actualParamCount = 0;
+
+          currentDesignatorObj = Tab.noObj;
+
+          inWhile = false;
+
+        // abstract classes
+          abstractClasses = new HashMap<String, Obj>();
+          abstractMethods = new HashMap<String, String>();
+    //    extendedClasses = new HashMap<String, Obj>();
+          currentTypeNameUses = null;
+          hasAbstractMethod = false;
+    }
 
     public static boolean isAbstractClass(){
 

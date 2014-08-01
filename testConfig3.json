@@ -216,7 +216,7 @@
             "funkcija": 7,
             "un_klasa": 1,
             "blokova_naredbi": 1,
-            "poziva_funkcija": 3,
+            "poziva_funkcija": 6,
             "instanciranja": 0,
             "metoda": 4,
             "atributa": 3,
@@ -259,19 +259,19 @@
             { "line": 20, "description": "2S-20" },
             { "line": 21, "description": "2S-23" },
 
-            { "line": 54, "description": "2S-42" },
-            { "line": 54, "description": "2S-20" },
+            { "line": 53, "description": "2S-42" },
+            { "line": 53, "description": "2S-20" },
+
+            { "line": 55, "description": "2S-26" },
 
             { "line": 56, "description": "2S-26" },
 
-            { "line": 57, "description": "2S-26" },
+            { "line": 57, "description": "2S-47" },
+            { "line": 57, "description": "2S-47" },
 
-            { "line": 58, "description": "2S-47" },
             { "line": 58, "description": "2S-47" },
 
             { "line": 59, "description": "2S-47" },
-
-            { "line": 60, "description": "2S-47" },
 
             { "line": 0, "description": "2S-00" }
         ]

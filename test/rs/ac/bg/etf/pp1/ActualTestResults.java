@@ -132,6 +132,8 @@ public class ActualTestResults {
             br = new BufferedReader(new FileReader(testFile));
             Yylex lexer = new Yylex(br);
 
+            TabUtils.resetAll();
+
             MJParser p = new MJParser(lexer);
             Symbol s = p.parse();  //pocetak parsiranja
 
