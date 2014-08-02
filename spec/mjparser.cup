@@ -501,10 +501,51 @@ parser code {:
         return result;
     }
 
+   public boolean globalFunctionCheck(Obj func, int funcleft) {
+
+      String fName = func.getName();
+
+      boolean isGlobal = (TabUtils.hasMainFunc && ("chr".equals(fName) || "ord".equals(fName) || "len".equals(fName))) ? true : false;
+
+      if(isGlobal) {
+
+         Struct actualParam = TabUtils.actualParams.get(0);
+
+         switch(fName) {
+            case "len":
+
+                if(Struct.Array != actualParam.getKind()) {
+                  report_error("Semanticka greska [2S-49] na liniji " + funcleft + " : stvarni parametar predefinisane len f-je mora biti niz!", null);
+                } else {
+
+                }
+
+                break;
+
+            case "ord":
+
+                break;
+
+            case "chr":
+
+                break;
+
+            default:
+                break;
+         }
+      }
+
+      return isGlobal;
+   }
+
     // TODO
    public boolean checkActParamsType(Obj func, int funcleft) {
 
       boolean isOK = true;
+
+      if(globalFunctionCheck(func, funcleft)) {
+            return true;
+      }
 
       if(TabUtils.actualParams.size() != 0){
 
