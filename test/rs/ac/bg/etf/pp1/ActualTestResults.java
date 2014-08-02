@@ -29,7 +29,7 @@ public class ActualTestResults {
     private static Map<String, TestInfo> results = new HashMap<>();
 
     private static TestInfo currentTest;
-    private static Pattern errorTagPattern = Pattern.compile("\\[(\\w{2}-\\d{2})\\]( na liniji (\\d+))?|(test\\d{2}\\.mj)");
+    private static Pattern errorTagPattern = Pattern.compile("\\[(\\w{2}-\\d{2})\\]( na liniji (\\d+))?|(test\\d{2,3}\\.mj)");
 
     static {
 
