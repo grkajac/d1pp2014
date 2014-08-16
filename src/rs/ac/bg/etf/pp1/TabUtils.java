@@ -8,14 +8,14 @@ package rs.ac.bg.etf.pp1;
  * To change this template use File | Settings | File Templates.
  */
 
-import com.sun.org.apache.xml.internal.security.keys.keyresolver.KeyResolver;
 import rs.etf.pp1.symboltable.Tab;
-import rs.etf.pp1.symboltable.concepts.*;
-import rs.etf.pp1.symboltable.factory.SymbolTableFactory;
-import rs.etf.pp1.symboltable.structure.SymbolDataStructure;
+import rs.etf.pp1.symboltable.concepts.Obj;
+import rs.etf.pp1.symboltable.concepts.Struct;
 import rs.etf.pp1.symboltable.visitors.DumpSymbolTableVisitor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TabUtils {
 
@@ -93,6 +93,7 @@ public class TabUtils {
     //    extendedClasses = new HashMap<String, Obj>();
           currentTypeNameUses = null;
           hasAbstractMethod = false;
+
     }
 
     public static boolean isAbstractClass(){

@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
+ *
+ * Class that holds informations about counting, syntax & semantic errors.
+ *
  * User: Aleksandar Grkajac aleksa888@gmail.com, ga040202d@student.etf.rs
- * Date: 7/18/14
- * Time: 5:23 PM
- * To change this template use File | Settings | File Templates.
+ * Date: 7/18/14 Time: 5:23 PM
+ *
  */
 public class TestInfo {
 

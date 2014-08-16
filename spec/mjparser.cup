@@ -6,6 +6,7 @@ import org.apache.log4j.*;
 // import java.io.*;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.*;
+import rs.etf.pp1.mj.runtime.Code;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -72,7 +73,7 @@ parser code {:
      * util functions
      */
 
-    public void constantProcessing(String id, int idleft, Struct type, ConstNode node){
+    public Obj constantProcessing(String id, int idleft, Struct type, ConstNode node){
 
         Obj konstanta = Tab.find(id);
 
@@ -128,6 +129,8 @@ parser code {:
         else {
             report_error("Semanticka greska [2S-07] na liniji " + idleft + " : [R76] Ime konstante '" + konstanta.getName() + "' je vec definisano", null);
         }
+
+        return konstanta;
     }
 
     public void varProcessing(String id, int idleft, Struct type, VarNode node){
@@ -449,7 +452,7 @@ parser code {:
              return result;
         }
 
-        if(op == 23) {
+        if(op == Code.add) {
 
            if(termLeft.getKind() == Struct.Int && termRight.getKind() == Struct.Int) {
 
@@ -461,7 +464,7 @@ parser code {:
 
                report_error("Semanticka greska [2S-34] na liniji " + line + " : izrazi pri operaciji + moraju biti tipa int ili string! ", null);
            }
-        } else if (op == 24) {
+        } else if (op == Code.sub) {
 
            if(termLeft.getKind() == Struct.Int && termRight.getKind() == Struct.Int) {
               result = Tab.intType;
@@ -676,7 +679,7 @@ parser code {:
         return (Obj.Var == d.getKind() || Obj.Elem == d.getKind() || Obj.Fld == d.getKind() ) ? true : false;
     }
 
-    public void checkPrint(Struct e, int eleft) {
+    public void checkPrint(Struct e, int eleft, Integer num) {
 
         if(!checkBasicType(e)) {
 
@@ -686,6 +689,35 @@ parser code {:
 
         if(TabUtils.hasMainFunc) {
            functionCallsInMainCount++;
+        }
+
+        switch(e.getKind()) {
+            case Struct.Int:
+
+                if(num != null) {
+
+                   Code.loadConst(num);
+                } else {
+
+                    Code.loadConst(5);
+                }
+                Code.put(Code.print);
+                break;
+
+            case Struct.Char:
+
+               if(num != null) {
+
+                  Code.loadConst(num);
+               } else {
+
+                   Code.loadConst(1);
+               }
+               Code.put(Code.bprint);
+               break;
+
+            default:
+                break;
         }
     }
 
@@ -709,6 +741,16 @@ parser code {:
         if(TabUtils.hasMainFunc) {
             functionCallsInMainCount++;
         }
+
+        switch (d.getType().getKind()) {
+
+            case Struct.Int: Code.put(Code.read); break;
+
+            case Struct.Char: Code.put(Code.bread); break;
+
+            default:  break;
+        }
+        Code.store(d);
     }
 
     public boolean checkEqualExpr(Obj d, Struct s, int dleft) {
@@ -730,7 +772,7 @@ parser code {:
         return isOk;
     }
 
-    public boolean checkIncDecExpr(Obj d, int dleft) {
+    public boolean checkIncDecExpr(Obj d, int dleft, boolean isInc) {
 
         boolean isOk = true;
 
@@ -744,6 +786,19 @@ parser code {:
 
             report_error("Semanticka greska [2S-22] na liniji " + dleft + " : increment/decrement izraz mora biti tipa int.", null);
             isOk = false;
+
+        } else {
+
+             Code.load(d);
+             Code.loadConst(1);
+
+             if(isInc) {
+                Code.put(Code.add);
+             } else {
+                Code.put(Code.sub);
+             }
+
+             Code.store(d);
         }
 
         return isOk;
@@ -799,6 +854,34 @@ parser code {:
         if(TabUtils.returnFound && TabUtils.isVoid) {
             report_error("Semanticka greska [2S-17] - nadjen return izraz za metodu '" + methName + "' koja je void.", null);
         }
+    }
+
+    /**
+    *    CODE GENERATION METHODS
+    */
+
+
+    public void setMethodAdrCode() {
+
+        if(!TabUtils.isMethodExist) {
+            TabUtils.currentMethodObj.setAdr(Code.pc);
+
+            if("main".equals(TabUtils.currentMethodObj.getName())) {
+                Code.mainPc = TabUtils.currentMethodObj.getAdr();
+            }
+        }
+    }
+
+    public void setMethodEnterCode() {
+
+        Code.put(Code.enter);
+        Code.put(TabUtils.currentMethodObj.getLevel());
+        Code.put(Tab.currentScope().getnVars());
+    }
+
+    public void setMethodExitCode() {
+        Code.put(Code.exit);
+        Code.put(Code.return_);
     }
 
 :}
@@ -875,12 +958,16 @@ Program ::= PROG ProgBegin:p GlobalDeclaration LBRACE MethodDecl RBRACE
                    parser.report_error("Semanticka greska - [2S-00] Nije pronadjena main funkcija", null);
                 }
 
+                Code.dataSize = Tab.currentScope().getnVars();
+
                 Tab.chainLocalSymbols(p);
                 Tab.closeScope();
             :}
             |
             PROG ProgBegin:p GlobalDeclaration LBRACE  RBRACE
             {:
+                Code.dataSize = Tab.currentScope().getnVars();
+
                 Tab.chainLocalSymbols(p);
                 parser.report_error("Semanticka greska - [2S-00] Nije pronadjena main funkcija", null);
                 Tab.closeScope();
@@ -961,29 +1048,40 @@ ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
 ConstDeclPart ::= IDENT:id EQUAL NUMBER:num
                   {:
                     con = ConstNode.NUMBER;
-                    parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
 
+                    konstanta.setAdr(num.intValue());
                   :}
                   |
                   IDENT:id EQUAL CHARCONST:ch
                   {:
                     con = ConstNode.CHAR;
-                    parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
 
+                    konstanta.setAdr(ch.charValue());
                   :}
                   |
                   IDENT:id EQUAL BOOLVAL:bool
                   {:
                     con = ConstNode.BOOL;
-                    parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
 
+                    konstanta.setAdr((bool == true) ? 1 : 0);
                   :}
                   |
                   IDENT:id EQUAL STRING_LITERAL:str
                   {:
                     con = ConstNode.STRING;
-                    parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
 
+                    //konstanta.setAdr(str.length());
+                    //Code.load(konstanta);
+
+                    // 1. get last free address from data stack
+                    // 2. set adr to Obj object
+                    // 3. push lenght of string to data stack
+                    // 4. push each char from string to data stack
+                    // 5. put string address to global hashmap for reuse
                   :};
 
 // ---------------------- VAR DECL --------------------------
@@ -1157,6 +1255,7 @@ MethodName ::= MethodRetType:retType IDENT:methName
                     RESULT = Tab.insert(Obj.Meth, methName, retType);
 
                     TabUtils.currentMethodObj = RESULT;
+
                     Tab.openScope();
 
                     var = VarNode.METHOD_FORMAL_VAR;
@@ -1166,11 +1265,19 @@ MethodName ::= MethodRetType:retType IDENT:methName
 MethodVarDeclLB_Recovery ::= MethodVarDeclList:m
                              {:
                                   parser.checkMainFunction(mleft);
+
+                                  parser.setMethodAdrCode();
+
+                                  parser.setMethodEnterCode();
                              :}
                              |
                              LBRACE:l
                              {:
                                   parser.checkMainFunction(lleft);
+
+                                  parser.setMethodAdrCode();
+
+                                  parser.setMethodEnterCode();
                              :};
 
 MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_Recovery AllStatements RBRACE
@@ -1184,6 +1291,8 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                       }
 
                       TabUtils.resetMethodsFlags();
+
+                      parser.setMethodExitCode();
 
                       Tab.closeScope();
                    :}
@@ -1206,6 +1315,8 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                      }
 
                      TabUtils.resetMethodsFlags();
+
+                     parser.setMethodExitCode();
 
                      Tab.closeScope();
                    :};
@@ -1317,17 +1428,21 @@ Unmatched ::= IF Brace_condition:cond Statement
 
 Matched ::= Designator:dest EQUAL Dodela:d
             {:
-                 parser.checkEqualExpr(dest, d, destleft);
+                 boolean isOK = parser.checkEqualExpr(dest, d, destleft);
+
+                 if(isOK) {
+                    Code.store(dest);
+                 }
             :}
             |
             Designator:dest INCREMENT SEMI
             {:
-                  parser.checkIncDecExpr(dest, destleft);
+                  parser.checkIncDecExpr(dest, destleft, true);
             :}
             |
             Designator:dest DECREMENT SEMI
             {:
-                  parser.checkIncDecExpr(dest, destleft);
+                  parser.checkIncDecExpr(dest, destleft, false);
             :}
             |
             FuncCalls
@@ -1346,12 +1461,18 @@ Matched ::= Designator:dest EQUAL Dodela:d
             {:
                 TabUtils.returnFound = true;
                 parser.checkReturnStat(t, tleft);
+
+                Code.put(Code.exit);
+                Code.put(Code.return_);
             :}
             |
             RETURN:r SEMI
             {:
                 TabUtils.returnFound = true;
                 parser.checkReturnStat(Tab.noType, rleft);
+
+                Code.put(Code.exit);
+                Code.put(Code.return_);
             :}
             |
             BREAK:b SEMI
@@ -1382,12 +1503,6 @@ Brace_condition ::= LPAREN Condition:c RPAREN
 
 Dodela ::= 	Expr:e SEMI
             {:
-                /*
-                if (parser.isInMain() && !parser.indeksGreska()) parser.incIskaza ();
-                parser.resetIndeksGreska();
-
-                RESULT = e;
-                */
                  RESULT = e;
             :}
             |
@@ -1419,12 +1534,12 @@ FuncCalls ::= ProgramFunc:func ActualPars_Rparen_Recovery:ap SEMI
               |
               PRINT LPAREN Expr:e RPAREN SEMI
               {:
-                   parser.checkPrint(e, eleft);
+                   parser.checkPrint(e, eleft, null);
               :}
               |
-              PRINT LPAREN Expr:e COMMA NUMBER RPAREN SEMI
+              PRINT LPAREN Expr:e COMMA NUMBER:n RPAREN SEMI
               {:
-                    parser.checkPrint(e, eleft);
+                    parser.checkPrint(e, eleft, n);
               :}
               |
               error SEMI:l
@@ -1463,10 +1578,6 @@ CondFact ::= Expr:exp1 Relop:op Expr:exp2
              |
              Expr:exp1
              {:
-                 // RESULT = exp1;
-                 // TODO odraditi logiku za proveru vrednosti i na osnovu nje definisati da li je   DONE
-                 // CondFact true/false
-
                  RESULT = parser.condFactCheck(exp1, exp1left);
              :};
 
@@ -1479,10 +1590,12 @@ Expr ::= Term_list:tl
          MINUS Term_list:tl
          {:
              RESULT = parser.minusTerm(tl, tlleft);
+             Code.put(Code.neg);
          :};
 
 Term_list ::= Term_list:t Addop:op Term:r
               {:
+                   Code.put(op);
                    RESULT = parser.addopTerms(t, r, rleft, op);
               :}
               |
@@ -1498,6 +1611,7 @@ Term ::= Factor_list:fl
 
 Factor_list ::= Factor_list:fl Mulop:op Factor:ff
                 {:
+                    Code.put(op);
                     RESULT = parser.mulopFactors(fl, ff, flleft);
                 :}
                 |
@@ -1506,13 +1620,23 @@ Factor_list ::= Factor_list:fl Mulop:op Factor:ff
                     RESULT = f;
                 :};
 
-Factor ::= NUMBER
+Factor ::= NUMBER:n
            {:
+              Obj num = Tab.insert(Obj.Con, "NUMBER", Tab.intType);
+              num.setAdr(n.intValue());
+              Code.load(num);
+
+
               RESULT = Tab.intType;
            :}
            |
-           CHARCONST
+           CHARCONST:c
            {:
+               Obj ch = Tab.insert(Obj.Con, "CHAR_CONST", Tab.charType);
+               ch.setAdr(c.charValue());
+               Code.load(ch);
+
+
                RESULT = Tab.charType;
            :}
            |
@@ -1521,19 +1645,34 @@ Factor ::= NUMBER
                RESULT = e;
            :}
            |
-           BOOLVAL
+           BOOLVAL:b
            {:
+               Obj bul = Tab.insert(Obj.Con, "BOOL", TabUtils.boolType);
+               bul.setAdr((b == true) ? 1 : 0);
+               Code.load(bul);
+
+
                RESULT = TabUtils.boolType;
            :}
            |
-           STRING_LITERAL
+           STRING_LITERAL:stl
            {:
                RESULT = TabUtils.stringType;
            :}
            |
            NEW Type:id LSQUARE Expr:e RSQUARE
            {:
+
                RESULT = parser.getRefArray(id, e, eleft);
+
+
+               Code.put(Code.newarray);
+
+               if (Tab.charType.equals(id)) {
+                    Code.put(0);
+               } else {
+                    Code.put(1);
+               }
            :}
            |
            NEW Type:id
@@ -1544,6 +1683,8 @@ Factor ::= NUMBER
            |
            Designator:d
            {:
+               Code.load(d);
+
                if(d.getType() == null) {
 
                     RESULT = Tab.noType;
@@ -1576,11 +1717,15 @@ ActualPars ::= ActualParamList
 ActualParamList ::= ActualParamList COMMA Expr:e
                     {:
                        TabUtils.actualParams.add(e);
+                       // TODO
+                       // Code.put(Code.pop); // stvarni parametri nisu implementirani, pa da ne ostanu na steku
                     :}
 					|
 					Expr:e
 					{:
                        TabUtils.actualParams.add(e);
+                       // TODO
+                       //Code.put(Code.pop); // stvarni parametri nisu implementirani, pa da ne ostanu na steku
 					:};
 
 Designator ::= IDENT:name
@@ -1588,10 +1733,13 @@ Designator ::= IDENT:name
                     TabUtils.isSingleName = false;
 
                     TabUtils.currentDesignatorObj = parser.getDesignator(name, nameleft, scope);
+
+                    Code.load(TabUtils.currentDesignatorObj);
                 :}
                 DesignatorList:dsList
                 {:
                     RESULT = dsList;
+
                     TabUtils.currentDesignatorObj = Tab.noObj;
                 :}
                 |
@@ -1632,34 +1780,36 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
                             RESULT = Tab.noObj;
                         } else {
 
-                            RESULT = new Obj(Obj.Elem, "",TabUtils.currentDesignatorObj.getType().getElemType());
+
+                            RESULT = new Obj(Obj.Elem, "Elem",TabUtils.currentDesignatorObj.getType().getElemType());
                         }
                     :}
                     |
                     DOT IDENT:name
                     {:
+
                          RESULT = parser.getClassDesignator(name, nameleft);
                     :};
 
-Addop ::= PLUS {: RESULT = 23; :}
+Addop ::= PLUS {: RESULT = Code.add; :}
           |
-          MINUS {: RESULT = 24; :};
+          MINUS {: RESULT = Code.sub; :};
 
-Mulop ::= TIMES {: RESULT = 25; :}
+Mulop ::= TIMES {: RESULT = Code.mul; :}
           |
-          DIV {: RESULT = 26; :}
+          DIV {: RESULT = Code.div; :}
           |
-          MOD {: RESULT = 27; :};
+          MOD {: RESULT = Code.rem; :};
 
-Relop ::= ISEQUAL {: RESULT = 0; :}
+Relop ::= ISEQUAL {: RESULT = Code.eq; :}
           |
-          ISNOTEQUAL {: RESULT = 1; :}
+          ISNOTEQUAL {: RESULT = Code.ne; :}
           |
-          ISGREATER {: RESULT = 4; :}
+          ISGREATER {: RESULT = Code.gt; :}
           |
-          ISGREATEREQ {: RESULT = 5; :}
+          ISGREATEREQ {: RESULT = Code.ge; :}
           |
-          ISLESS {: RESULT = 2; :}
+          ISLESS {: RESULT = Code.lt; :}
           |
-          ISLESSEQ {: RESULT = 3; :};
+          ISLESSEQ {: RESULT = Code.le; :};
 

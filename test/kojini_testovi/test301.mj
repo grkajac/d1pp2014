@@ -7,6 +7,7 @@ program test301
 	int niz[];
 	
 	char nizch[];
+	char temp;
 	
 {
 	void main(){
@@ -15,8 +16,13 @@ program test301
 		bodovi++;
 		bodovi = bodovi + jedan;
 		bodovi--;
-		print(bodovi); 
-			//izlaz 1
+		print(bodovi);
+
+		//izlaz 1
+
+		temp = 'g';
+		print(temp);
+		// izlaz 'g'
 		
 		niz = new int[2];
 		niz[0] = pet;
@@ -47,6 +53,7 @@ program test301
 
 //	Izlazi: 
 //	1
+//  g
 //	2
 //	b
 //	c

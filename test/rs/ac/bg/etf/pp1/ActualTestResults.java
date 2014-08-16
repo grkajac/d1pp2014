@@ -4,6 +4,7 @@ import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 import rs.ac.bg.etf.pp1.util.Log4JUtils;
+import rs.etf.pp1.mj.runtime.Code;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -13,17 +14,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created with IntelliJ IDEA.
+ * Class generates actual results of tests.
+ *
  * User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com
  * Date: 7/23/14
  * Time: 2:42 PM
- * To change this template use File | Settings | File Templates.
  */
 public class ActualTestResults {
 
     public static final String TEST_PATH = "test/kojini_testovi";
-    public static final String PARSED_TEST_PATH = "logs/testResult.log";
+    public static final String CURRENT_PARSED_TEST_PATH = "logs/testResult.log";
     public static final String PARSED_TESTS_SINGLE_LOG_PATH = "logs-test";
+    public static final String GENERATED_CODE_TEST_PATH = "logs-generatedcode";
 
     private static List<File> testFiles = new ArrayList<>();
     private static Map<String, TestInfo> results = new HashMap<>();
@@ -60,13 +62,26 @@ public class ActualTestResults {
         }
     }
 
+    /**
+     * Create results that are parsed from actual test files.
+     *
+     * For example, we have written test, (test01.mj).
+     *
+     * That test is loaded and analized by compiler.
+     * Compiler output is stored in result file.
+     * That result file is analyzed, via regex, if it contains any syntax, semantic or counting error.
+     */
     private static void parseResults() {
 
+        // Clearing logs for all tests, each test contains single log for itself.
         clearAllTestSingleLog(new File(PARSED_TESTS_SINGLE_LOG_PATH));
+
+        // Clearing same thing for test that is used for generating code.
+        clearAllTestSingleLog(new File(GENERATED_CODE_TEST_PATH));
 
         for (File testFile : testFiles) {
 
-            clearLogFile(new File(PARSED_TEST_PATH));
+            clearLogFile(new File(CURRENT_PARSED_TEST_PATH));
 
             startTest(testFile);
 
@@ -179,6 +194,13 @@ public class ActualTestResults {
 
                 log.info("Parsiranje USPESNO zavrseno :)");
 
+                if(testFile.getName().matches("test\\d{3}\\.mj")) {
+
+                    File codeGenFile = new File(GENERATED_CODE_TEST_PATH + "/" + testFile.getName() + ".obj");
+
+                    Code.write(new FileOutputStream(codeGenFile));
+                }
+
             } else {
 
                 log.error("Parsiranje ima GRESKE :(");
@@ -214,6 +236,9 @@ public class ActualTestResults {
      *
      * Each line from file is analized and if line contains error then error is putted into
      * specific list based on error type.
+     *
+     * For example if line contains syntax error it goes to syntax error list,
+     * same thing is for semantic and counting errors.
      */
     private static void parseCurrentTest() {
 
@@ -223,7 +248,7 @@ public class ActualTestResults {
 
         try {
 
-            scanner = new Scanner(new File(PARSED_TEST_PATH));
+            scanner = new Scanner(new File(CURRENT_PARSED_TEST_PATH));
 
             String line;
 
@@ -243,7 +268,7 @@ public class ActualTestResults {
                 }
             }
 
-            Files.copy(new File(PARSED_TEST_PATH).toPath(),
+            Files.copy(new File(CURRENT_PARSED_TEST_PATH).toPath(),
                        new File(PARSED_TESTS_SINGLE_LOG_PATH + "/" + currentTest.getName() + ".log").toPath(),
                        StandardCopyOption.REPLACE_EXISTING);
 
@@ -263,7 +288,7 @@ public class ActualTestResults {
 
                 } catch (Exception e1) {
 
-                    System.out.println("GrammarError u citanju " + PARSED_TEST_PATH);
+                    System.out.println("GrammarError u citanju " + CURRENT_PARSED_TEST_PATH);
 
                 }
             }

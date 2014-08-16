@@ -374,12 +374,12 @@
     {
         "name": "test301.mj",
         "brojanje": {
-            "glob_promenljivih": 1,
+            "glob_promenljivih": 2,
             "glob_nizova": 2,
             "funkcija": 1,
             "un_klasa": 0,
             "blokova_naredbi": 0,
-            "poziva_funkcija": 7,
+            "poziva_funkcija": 8,
             "instanciranja": 2,
             "metoda": 0,
             "atributa": 0,
