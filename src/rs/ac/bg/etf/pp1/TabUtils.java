@@ -52,8 +52,10 @@ public class TabUtils {
 
     // abstract classes
     public static Map<String, Obj> abstractClasses = new HashMap<String, Obj>();
-    public static Map<String, String> abstractMethods = new HashMap<String, String>();
-//    public static Map<String, Obj> extendedClasses = new HashMap<String, Obj>();
+    public static Map<String, ArrayList<Obj>> abstractMethods = new HashMap<String, ArrayList<Obj>>();
+
+    public static Map<String, Obj> extendedClasses = new HashMap<String, Obj>();
+
     public static String currentTypeNameUses;
     public static boolean hasAbstractMethod = false;
 
@@ -89,8 +91,10 @@ public class TabUtils {
 
         // abstract classes
           abstractClasses = new HashMap<String, Obj>();
-          abstractMethods = new HashMap<String, String>();
-    //    extendedClasses = new HashMap<String, Obj>();
+          abstractMethods = new HashMap<String, ArrayList<Obj>>();
+
+          extendedClasses = new HashMap<String, Obj>();
+
           currentTypeNameUses = null;
           hasAbstractMethod = false;
 
@@ -116,6 +120,52 @@ public class TabUtils {
         formalParamPosition = 0;
         currentMethodObj = Tab.noObj;
         isMethodExist = false;
+    }
+
+    public static void addAbstractMethod(String absClassName, Obj methObj) {
+
+        ArrayList<Obj> listOfMethods = abstractMethods.get(absClassName);
+
+        if(listOfMethods == null) {
+
+            listOfMethods = new ArrayList<Obj>();
+
+            listOfMethods.add(methObj);
+
+            abstractMethods.put(absClassName, listOfMethods);
+
+        } else {
+
+            listOfMethods.add(methObj);
+        }
+    }
+
+    public static boolean isAllAbstractMethodsImplemented(Obj classObj) {
+
+        boolean result = true;
+
+        Obj extendedClass = extendedClasses.get(classObj.getName());
+
+        Obj supClass = abstractClasses.get(extendedClass.getName());
+
+        if(supClass != null) {
+
+            ArrayList<Obj> listaApsMetoda = abstractMethods.get(supClass.getName());
+
+            for (Obj obj : listaApsMetoda) {
+
+                Obj finded = findInCurrentScope(obj.getName());
+
+                // TODO!!!
+                if(obj.getName().equals(finded.getName()) && obj.getKind() == finded.getKind()){
+                    continue;
+                }
+
+                result = false;
+            }
+        }
+
+        return result;
     }
 
     /**

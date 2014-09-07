@@ -83,7 +83,7 @@ public class GrammarAnalysisTest {
         try {
 
             // read from file, and convert to the user object
-            testsConfiguration = mapper.readValue(new File("testConfig3.json"), new TypeReference<List<TestInfo>>() {
+            testsConfiguration = mapper.readValue(new File("testConfig.json"), new TypeReference<List<TestInfo>>() {
             });
 
         } catch (JsonGenerationException | JsonMappingException e) {
@@ -205,7 +205,6 @@ public class GrammarAnalysisTest {
         } else {
 
             isEqual(actualTest, expectedTest);
-
         }
     }
 }

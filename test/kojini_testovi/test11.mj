@@ -1,0 +1,117 @@
+//nivo C
+//ispravan test
+
+program TestApstraktneKlase
+	const int PI = 3;
+	int rezultati[];
+	int c;
+
+	// klasa koja nije apstraktna a ima apstraktnu metodu
+	class kvadrat
+	{
+		int a, b;
+		
+		{
+			void setA()
+			{
+				read(a);
+			}
+
+			void setB()
+			{
+				read(b);
+			}
+
+			int povrsina() {
+			    return a*b;
+			}
+
+			abstract void greskica();
+		}
+	}
+
+    // klasa koja je apstraktna a nema aptstraknu metodu
+	abstract class BadList1 {
+
+	    {
+            bool contains(int item) {
+
+                return true;
+            }
+	    }
+	}
+
+    // ispravna apstraktna klasa
+	abstract class List {
+
+          char c;
+          {
+
+            bool add(int a) {
+
+                if(a > 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            abstract void clear();
+
+          }
+	}
+
+    // klasa koja nije implementirala apstraktnu metodu
+	class LinkedList extends List {
+
+        int ll;
+        {
+            int getLL() {
+                return ll;
+            }
+        }
+	}
+	
+	kvadrat kvad;
+	List ablista;
+	List listaImpl;
+
+	{
+
+		int obim2(kvadrat k)
+		int rez;
+		kvadrat pom;
+		{
+			pom=k;
+			rez=2*pom.b+2*pom.a;
+			return rez;
+		}
+		
+	
+		int racunaj()
+			int x;
+			char i[];
+		{ 
+			read(x);
+			return x;	
+		}
+
+		void main ()
+		{
+			
+			rezultati[1]=1;
+			kvad.setA();
+			kvad.setB();
+			rezultati[2]=kvad.povrsina();
+			rezultati[3]=obim2(kvad);	
+			
+			if (c>0) {while(c>0)read(c);}
+			c= racunaj();
+
+			ablista = new List;
+
+			listaImpl = new LinkedList;
+
+		}
+		
+	}
