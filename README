@@ -22,3 +22,9 @@
 
     4. JUnit parameterized test compares list of value obtained from json file
        and list of values obtained from actual parser outputs.
+       
+
+- Problems:
+
+	1. TabUtils.assignableTo - prepravi tako da mogu da se porede osnovna i izvedena klasa
+	2. 

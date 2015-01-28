@@ -39,11 +39,11 @@ class Beta extends Alfa{
 }
 
 class Gama extends Alfa{
-	int a;
+	int a;									 //ovo polje se preskace, posto postoji isto u Klasi Alfa
 	{
 		void dodaj(int x, int y, int z)  {
 			
-			a = x;
+			a = x;							 //semanticka, tipovi se ne poklapaju - nije bilo
 			i = 'i';                         
 			niz = new int[5];                //semanticka, niz nije deklarisan, tipovi se ne poklapaju
 			while(i < 5)                     //semanticka, tipovi se ne poklapaju  

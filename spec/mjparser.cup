@@ -164,7 +164,7 @@ parser code {:
 
                     prom = Tab.insert(Obj.Fld, id, type);
 
-                    if(!"this".equals(id) && !"super".equals(id)) {
+                    if(!"this".equals(id)) {
 
                         innerClassAttributesCount++;
 
@@ -196,7 +196,7 @@ parser code {:
 
                     prom = Tab.insert(Obj.Fld, id, new Struct(Struct.Array, type));
 
-                    if(!"this".equals(id) && !"super".equals(id)) {
+                    if(!"this".equals(id)) {
 
                          innerClassAttributesCount++;
 
@@ -228,12 +228,31 @@ parser code {:
            formParam.setFpPos(TabUtils.formalParamPosition++);
     }
 
-    public Obj superClassProcessing(String superClass, int superClassleft){
+	// Dodaju se atributi nadklase.
+	
+    public void copySuperClassAtributes(String superClass, Obj baseClass, int superClassleft) {
+
+        TabUtils.currentSuperClassObj = getSuperClassObj(superClass, superClassleft);
+        
+        if(!Tab.noObj.equals(TabUtils.currentSuperClassObj)) {
+	        
+			Collection<Obj> superClassMembers = TabUtils.currentSuperClassObj.getType().getMembers();
+			
+			for(Obj member: superClassMembers) {
+				if(Obj.Fld == member.getKind()) {
+					Tab.currentScope().addToLocals(member);
+				}
+			}
+		}
+    }
+
+    public Obj getSuperClassObj(String superClass, int superClassleft){
 
         Obj result = Tab.noObj;
         if(superClass != null){
 
             Obj superClassObj = Tab.find(superClass);
+            
             if(Tab.noObj.equals(superClassObj)){
 
                 report_error("Semanticka greska [2S-11] na liniji " + superClassleft + " - nadklasa nije definisana", null);
@@ -268,18 +287,6 @@ parser code {:
         return returnObj;
     }
 
-    public void addSuperFieldIntoClass(String superClass, Obj baseClass, int superClassleft) {
-
-        Obj superObj = superClassProcessing(superClass, superClassleft);
-
-        if(!Tab.noObj.equals(superObj) && !Tab.noObj.equals(baseClass)){
-
-            TabUtils.extendedClasses.put(baseClass.getName(), superObj);
-
-            varProcessing("super", 777, superObj.getType(), VarNode.CLASS_VAR);
-        }
-    }
-
     public boolean addAbstractClass(Obj absClass, ScopeNode scope){
 
         boolean result = false;
@@ -305,11 +312,10 @@ parser code {:
         TabUtils.hasAbstractMethod = false;
     }
 
+	// TODO
     public void checkIfAbstractMethodsAreImplemented (Obj classObj, ScopeNode scope) {
 
-        Obj superClassObj = TabUtils.findInCurrentScope("super");
-
-        if(ScopeNode.ABSTRACT_CLASS.equals(scope) || Tab.noObj.equals(superClassObj)) {
+        if(ScopeNode.ABSTRACT_CLASS.equals(scope)) {
             return;
         }
 
@@ -336,6 +342,7 @@ parser code {:
         Tab.chainLocalSymbols(methodObj);
     }
 
+	// TODO
     public void insertThisParam(ScopeNode scope, VarNode var){
 
         if(ScopeNode.CLASS.equals(scope) || ScopeNode.ABSTRACT_CLASS.equals(scope)){
@@ -345,21 +352,12 @@ parser code {:
 
     public Obj getDesignator(String name, int nameleft, ScopeNode scope){
 
-        Obj obj = Tab.noObj;
+        Obj obj = Tab.find(name);
 
-        // prvo trazi u unutrasnjim klasama ako si u dosegu
-        if(ScopeNode.CLASS.equals(scope) || ScopeNode.ABSTRACT_CLASS.equals(scope)) {
-
-            obj = TabUtils.findVarFromClassMethod(name);
-        } else {
-
-           obj = Tab.find(name);
-
-           if("this".equals(obj.getName())) {
-              report_error("Semanticka greska [2S-41] na liniji " + nameleft + " : name 'this' ne sme se koristiti u globalnom opsegu! ", null);
-              return Tab.noObj;
-           }
-        }
+       if("this".equals(obj.getName()) && ScopeNode.GLOBAL.equals(scope)) {
+          report_error("Semanticka greska [2S-41] na liniji " + nameleft + " : name 'this' ne sme se koristiti u globalnom opsegu! ", null);
+          return Tab.noObj;
+       }
 
         if(Tab.noObj.equals(obj)){
             report_error("Semanticka greska [2S-42] na liniji " + nameleft + " : name '" + name + "' nije deklarisano! ", null);
@@ -367,23 +365,6 @@ parser code {:
         }
 
         return obj;
-    }
-
-    public Obj getFieldFromClass(String fieldName, Obj className) {
-
-        Obj field = null;
-
-        if(className.getName().equals("this")){
-
-             // field = Tab.currentScope.getOuter().findSymbol(fieldName);
-             field = TabUtils.findInCurrentClassAndSuperClasses(fieldName);
-        } else {
-
-             // field = className.getType().getMembersTable().searchKey(fieldName);
-             field = TabUtils.findFieldInClassAndSuperClasses(fieldName, className);
-        }
-
-        return field;
     }
 
     public Obj getClassDesignator(String name, int nameleft) {
@@ -396,7 +377,7 @@ parser code {:
              return result;
         }
 
-        Obj classElement = getFieldFromClass(name, className);
+        Obj classElement = TabUtils.findMemberInClass(TabUtils.currentDesignatorObj, name);
 
         if(Tab.noObj.equals(classElement)) {
 
@@ -519,6 +500,7 @@ parser code {:
         return result;
     }
 
+	// TODO
    public boolean globalFunctionCheck(Obj func, int funcleft) {
 
       String fName = func.getName();
@@ -592,7 +574,7 @@ parser code {:
 
       return isOK;
    }
-
+	// TODO
     public Struct checkFunc(Obj func, int funcleft, ScopeNode scope) {
 
         Struct result = Tab.noType;
@@ -842,17 +824,21 @@ parser code {:
         }
     }
 
-    public boolean findMethodName(String methName, int methNameleft) {
+    public boolean findMethodName(String methName, int methNameleft, ScopeNode scope) {
 
         boolean result = false;
 
-        if(methName.equals("main")) {
+        if(methName.equals("main") && ScopeNode.GLOBAL.equals(scope)) {
             TabUtils.hasMainFunc = true;
         }
 
-        Obj findedMeth = Tab.currentScope.findSymbol(methName);
+		// TODO - razlika izmedju dupliranja imena metoda i override-ovanja metoda nadklase.
 
-        if(findedMeth != null) {
+        Obj findedMeth = Tab.currentScope.findSymbol(methName);
+        
+        boolean overridingMethod = TabUtils.checkIfMethodNameExistsInSuperClass(methName);
+
+        if(findedMeth != null && !overridingMethod) {
             report_error("Semanticka greska [2S-13] na liniji " + methNameleft + " : metoda je vec deklarisana.", null);
             result = true;
         }
@@ -1009,7 +995,6 @@ GlobalDeclPart ::=  ConstDecl
                     |
                     ClassDecl;
 
-
 Type ::= IDENT:typeName
          {:
 
@@ -1033,7 +1018,6 @@ Type ::= IDENT:typeName
             }
 
         :};
-
 
 // ---------------------- CONST DECL --------------------------
 
@@ -1137,9 +1121,7 @@ VarPart ::= IDENT:id
                 parser.varProcessing(id, idleft, TabUtils.currentVarType, arrayVar);
             :};
 
-
 // ---------------------- CLASS DECL --------------------------
-
 
 AbsClass ::=  CLASS
               {:
@@ -1163,13 +1145,15 @@ ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
                     parser.checkAbstractMethodExists(scope);
 
                     parser.checkIfAbstractMethodsAreImplemented(classObj, scope);
+                    
+                    TabUtils.repairThisParameter();
 
                     parser.report_info("Nadjena klasa na liniji " + classObjleft + " | " + TabUtils.printObj(classObj), null);
                  }
 
                  Tab.closeScope();
-
-                 TabUtils.currentClassObj = Tab.noObj;
+                 
+                 TabUtils.resetClassFlags();
 
                  scope = ScopeNode.GLOBAL;
               :};
@@ -1180,7 +1164,7 @@ ClassExtendsLB_Recovery ::= IDENT:baseClass EXTENDS IDENT:superClass LBRACE
 
                                 Tab.openScope();
 
-                                parser.addSuperFieldIntoClass(superClass, RESULT, superClassleft);
+                                parser.copySuperClassAtributes(superClass, RESULT, superClassleft);
                             :}
                             |
                             IDENT:baseClass LBRACE
@@ -1235,7 +1219,7 @@ C_VarList ::= C_VarList COMMA VarPart
               |
               VarPart;
 
-ClassMethodDecl ::= LBRACE ClassMethodList RBRACE;
+ClassMethodDecl ::= LBRACE:l {: TabUtils.copySuperClassMethods(); :} ClassMethodList RBRACE;
 
 ClassMethodList ::= ClassMethodList ClassMethodPart
                     |
@@ -1243,9 +1227,7 @@ ClassMethodList ::= ClassMethodList ClassMethodPart
 
 ClassMethodPart ::= MethodDeclPart;
 
-
 // ---------------------- METHOD DECL --------------------------
-
 
 MethodDecl ::= MethodDeclList;
 
@@ -1267,7 +1249,7 @@ MethodRetType ::= Type:retType
 
 MethodName ::= MethodRetType:retType IDENT:methName
                 {:
-                    TabUtils.isMethodExist = parser.findMethodName(methName, methNameleft);
+                    TabUtils.isMethodExist = parser.findMethodName(methName, methNameleft, scope);
 
                     RESULT = Tab.insert(Obj.Meth, methName, retType);
 
@@ -1304,8 +1286,9 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
 
                           parser.countMethods(scope);
                           parser.checkReturnExp(methName.getName());
-                          parser.setMethodParams(methName);
                       }
+
+                      parser.setMethodParams(methName);
 
                       TabUtils.resetMethodsFlags();
 
@@ -1341,10 +1324,6 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                      Tab.closeScope();
                    :};
 
-
-
-
-
 MethodVarDeclList ::= LocalVarDecl_Semi_Recovery MethodVarDeclList
                       |
                       LocalVarDecl_Lbrace_Recovery;
@@ -1373,7 +1352,6 @@ M_VarList ::= M_VarList COMMA VarPart
               |
               VarPart;
 
-
 // ---------------------- FORM PARAMS --------------------------
 
 FormPars_Recovery ::= FormPars
@@ -1385,8 +1363,6 @@ FormPars_Recovery ::= FormPars
                       {:
                           var = VarNode.METHOD_LOCAL_VAR;
                       :};
-
-
 
 FormPars ::= FormalParamDecl_Comma_Recovery FormPars
 					|
@@ -1401,7 +1377,7 @@ FormalParamDecl_Comma_Recovery ::= FormalParamType VarPart COMMA
 
 FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
                                     {:
-
+										// TODO
                                     :}
                                     |
                                     error RPAREN:l
@@ -1780,18 +1756,6 @@ DesignatorList ::= DesignatorList DesignatorPart:dlp
                         RESULT = dp;
                    :};
 
-ExprInSquaresRS_Recovery ::= LSQUARE Expr:e RSQUARE
-                             {:
-                                  if(!Tab.intType.equals(e)){
-                                    parser.report_error("Semanticka greska [2S-43] na liniji " + eleft + " : index niza mora biti tipa int! ", null);
-                                  }
-                             :}
-                             |
-                             error RSQUARE:l
-                             {:
-                                parser.report_error("Sintaksna greska [1S-15] na liniji " + lleft + " : izraza za index. niza, izvrsen oporavak do ]",null);
-                             :};
-
 DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
                     {:
                         if(TabUtils.currentDesignatorObj.getType().getKind() != Struct.Array){
@@ -1807,9 +1771,23 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
                     |
                     DOT IDENT:name
                     {:
-
-                         RESULT = parser.getClassDesignator(name, nameleft);
+						//parser.getClassDesignator(name, nameleft);
+                         RESULT = Tab.noObj;
                     :};
+                    
+                    
+ExprInSquaresRS_Recovery ::= LSQUARE Expr:e RSQUARE
+                             {:
+                                  if(!Tab.intType.equals(e)){
+                                    parser.report_error("Semanticka greska [2S-43] na liniji " + eleft + " : index niza mora biti tipa int! ", null);
+                                  }
+                             :}
+                             |
+                             error RSQUARE:l
+                             {:
+                                parser.report_error("Sintaksna greska [1S-15] na liniji " + lleft + " : izraza za index. niza, izvrsen oporavak do ]",null);
+                             :};
+                    
 
 Addop ::= PLUS {: RESULT = Code.add; :}
           |
