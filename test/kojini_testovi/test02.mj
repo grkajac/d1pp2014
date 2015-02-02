@@ -11,7 +11,7 @@ program MaxCifra
 		read(a);
 		maxcif = 0;
 		while(a != 0){            //semanticka, tipovi se ne poklapaju
-			c = a % 10;
+			c = a % 10;			  // semanticka, tipovi se ne poklapaju NOVO
 			if(maxcif <> c)       //sintaksna greska u uslovu if-a, oporavak do )
 				maxcif = c;
 			a = a/10;             //semanticka, operandi uz / moraju biti int

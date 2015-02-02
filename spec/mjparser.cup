@@ -595,6 +595,7 @@ parser code {:
              actParamNum++;
         }
 
+		// TODO
         if(func.getLevel() != actParamNum){
 
           report_error("Semanticka greska [2S-26] na liniji " + funcleft + " : broj stvarnih i formalnih parametara se ne slaze", null);
@@ -805,9 +806,10 @@ parser code {:
 
         if(!Tab.noObj.equals(TabUtils.currentMethodObj) && "main".equals(TabUtils.currentMethodObj.getName())){
 
+			// TODO
             if(Tab.currentScope().getnVars() > 0) {
 
-                report_error("Semanticka greska [2S-14] na liniji " + mleft + " : main funkcija ne sme imati lokalne i formalne argumente.", null);
+                // report_error("Semanticka greska [2S-14] na liniji " + mleft + " : main funkcija ne sme imati lokalne i formalne argumente.", null);
             }
 
             if(!TabUtils.currentMethodObj.getType().equals(Tab.noType)) {
@@ -1144,7 +1146,7 @@ ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
 
                     parser.checkAbstractMethodExists(scope);
 
-                    parser.checkIfAbstractMethodsAreImplemented(classObj, scope);
+                    // parser.checkIfAbstractMethodsAreImplemented(classObj, scope);
                     
                     TabUtils.repairThisParameter();
 
@@ -1261,24 +1263,6 @@ MethodName ::= MethodRetType:retType IDENT:methName
                     parser.insertThisParam(scope, var);
                 :};
 
-MethodVarDeclLB_Recovery ::= MethodVarDeclList:m
-                             {:
-                                  parser.checkMainFunction(mleft);
-
-                                  parser.setMethodAdrCode();
-
-                                  parser.setMethodEnterCode();
-                             :}
-                             |
-                             LBRACE:l
-                             {:
-                                  parser.checkMainFunction(lleft);
-
-                                  parser.setMethodAdrCode();
-
-                                  parser.setMethodEnterCode();
-                             :};
-
 MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_Recovery AllStatements RBRACE
                    {:
 
@@ -1323,6 +1307,24 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
 
                      Tab.closeScope();
                    :};
+
+MethodVarDeclLB_Recovery ::= MethodVarDeclList:m
+                             {:
+                                  parser.checkMainFunction(mleft);
+
+                                  parser.setMethodAdrCode();
+
+                                  parser.setMethodEnterCode();
+                             :}
+                             |
+                             LBRACE:l
+                             {:
+                                  parser.checkMainFunction(lleft);
+
+                                  parser.setMethodAdrCode();
+
+                                  parser.setMethodEnterCode();
+                             :};
 
 MethodVarDeclList ::= LocalVarDecl_Semi_Recovery MethodVarDeclList
                       |
@@ -1377,7 +1379,7 @@ FormalParamDecl_Comma_Recovery ::= FormalParamType VarPart COMMA
 
 FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
                                     {:
-										// TODO
+										
                                     :}
                                     |
                                     error RPAREN:l

@@ -39,7 +39,6 @@
         "semanticErrorList": [
             { "line": 0, "description": "2S-01" },
             { "line": 8, "description": "2S-09" },
-            { "line": 10, "description": "2S-14" },
             { "line": 13, "description": "2S-30" },
 
             { "line": 14, "description": "2S-36" },
@@ -141,7 +140,6 @@
 
             { "line": 0, "description": "2S-01" },
 
-            { "line": 34, "description": "2S-14" },
             { "line": 34, "description": "2S-15" },
 
             { "line": 37, "description": "2S-42" },

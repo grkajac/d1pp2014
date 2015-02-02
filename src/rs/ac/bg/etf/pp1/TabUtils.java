@@ -187,6 +187,10 @@ public class TabUtils {
 	 */
 	public static boolean equalsClassRefs(Struct dest, Struct src) {
 		
+		if (dest.getKind() != Struct.Class || src.getKind() != Struct.Class) {
+			return false;
+		}
+
 		Collection<Obj> destMembers = dest.getMembers();
 		SymbolDataStructure srcMembers = src.getMembersTable();
 		
