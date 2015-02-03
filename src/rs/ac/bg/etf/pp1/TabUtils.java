@@ -229,6 +229,10 @@ public class TabUtils {
 	 */
 	public static Obj findMemberInClass(Obj classObj, String memberName) {
 
+		if (classObj.getType().getKind() != Struct.Class) {
+			return Tab.noObj;
+		}
+
 		Collection<Obj> members = classObj.getType().getMembers();
 
 		for (Obj member : members) {

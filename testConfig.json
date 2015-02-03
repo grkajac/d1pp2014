@@ -234,7 +234,7 @@
             "poziva_funkcija": 0,
             "instanciranja": 2,
             "metoda": 4,
-            "atributa": 5,
+            "atributa": 4,
             "izvodjenja": 1
         },
         "syntaxErrorList": [],
@@ -257,6 +257,8 @@
             { "line": 20, "description": "2S-20" },
             { "line": 21, "description": "2S-23" },
 
+            { "line": 42, "description": "2S-09" },
+ 
             { "line": 53, "description": "2S-42" },
             { "line": 53, "description": "2S-20" },
 
@@ -285,7 +287,7 @@
             "poziva_funkcija": 4,
             "instanciranja": 6,
             "metoda": 5,
-            "atributa": 6,
+            "atributa": 5,
             "izvodjenja": 2
         },
         "syntaxErrorList": [
@@ -304,6 +306,9 @@
             { "line": 33, "description": "2S-20" },
             { "line": 34, "description": "2S-20" },
 
+            { "line": 42, "description": "2S-09" },
+            { "line": 46, "description": "2S-20" },
+
             { "line": 48, "description": "2S-42" },
             { "line": 48, "description": "2S-20" },
 
@@ -317,8 +322,6 @@
             { "line": 51, "description": "2S-22" },
 
             { "line": 0, "description": "2S-16" },
-
-            { "line": 78, "description": "2S-14" },
 
             { "line": 81, "description": "2S-20" },
 
@@ -342,7 +345,7 @@
             "poziva_funkcija": 19,
             "instanciranja": 6,
             "metoda": 6,
-            "atributa": 7,
+            "atributa": 6,
             "izvodjenja": 2
         },
         "syntaxErrorList": [
@@ -355,11 +358,11 @@
         "semanticErrorList": [
             { "line": 10, "description": "2S-13" },
 
+            { "line": 24, "description": "2S-09" },
+
             { "line": 50, "description": "2S-42" },
             { "line": 50, "description": "2S-33" },
             { "line": 0, "description": "2S-17" },
-
-            { "line": 68, "description": "2S-14" },
 
             { "line": 73, "description": "2S-19" },
 

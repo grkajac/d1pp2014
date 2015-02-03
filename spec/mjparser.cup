@@ -352,41 +352,40 @@ parser code {:
 
     public Obj getDesignator(String name, int nameleft, ScopeNode scope){
 
-        Obj obj = Tab.find(name);
-
-       if("this".equals(obj.getName()) && ScopeNode.GLOBAL.equals(scope)) {
-          report_error("Semanticka greska [2S-41] na liniji " + nameleft + " : name 'this' ne sme se koristiti u globalnom opsegu! ", null);
+       if("this".equals(name) && ScopeNode.GLOBAL.equals(scope)) {
+          report_error("Semanticka greska [2S-41] na liniji " + nameleft + " : 'this' ne sme se koristiti u globalnom opsegu! ", null);
           return Tab.noObj;
        }
+       
+       if("this".equals(name) && (ScopeNode.CLASS.equals(scope) || ScopeNode.ABSTRACT_CLASS.equals(scope))) {
+       		return TabUtils.currentClassObj;
+       }
 
-        if(Tab.noObj.equals(obj)){
-            report_error("Semanticka greska [2S-42] na liniji " + nameleft + " : name '" + name + "' nije deklarisano! ", null);
-            return obj;
-        }
+       Obj obj = Tab.find(name);
+		
+	   if(Tab.noObj.equals(obj)){
+		   report_error("Semanticka greska [2S-42] na liniji " + nameleft + " : '" + name + "' nije deklarisano! ", null);
+		   return obj;
+	   }
 
-        return obj;
+       return obj;
     }
 
     public Obj getClassDesignator(String name, int nameleft) {
 
-        Obj result = Tab.noObj;
-        Obj className = TabUtils.currentDesignatorObj;
-
-        if(className.getType().getKind() != Struct.Class) {
-             report_error("Semanticka greska [2S-45] na liniji " + nameleft + " : name " + className.getName() + " mora biti unutrasnja klasa! ", null);
-             return result;
+        if(TabUtils.currentDesignatorObj.getType().getKind() != Struct.Class) {
+             report_error("Semanticka greska [2S-45] na liniji " + nameleft + " :  '" + TabUtils.currentDesignatorObj.getName() + "' mora biti unutrasnja klasa! ", null);
+             return Tab.noObj;
         }
 
-        Obj classElement = TabUtils.findMemberInClass(TabUtils.currentDesignatorObj, name);
+		Obj result = TabUtils.findMemberInClass(TabUtils.currentDesignatorObj, name);
 
-        if(Tab.noObj.equals(classElement)) {
+        if(Tab.noObj.equals(result)) {
 
-           report_error("Semanticka greska [2S-46] na liniji " + nameleft + " : name " + name + " nije deklarisano unutar klase! ", null);
-
+           report_error("Semanticka greska [2S-46] na liniji " + nameleft + " : '" + name + "' nije deklarisano unutar klase! ", null);
         } else {
 
-           TabUtils.currentDesignatorObj = classElement;
-           result = classElement;
+           TabUtils.currentDesignatorObj = result;
         }
 
         return result;
@@ -581,7 +580,7 @@ parser code {:
 
         if(func.getKind() != Obj.Meth){
 
-             report_error("Semanticka greska [2S-25] na liniji " + funcleft + " : name mora oznacavati metodu un.klase ili glob. metodu.", null);
+             report_error("Semanticka greska [2S-25] na liniji " + funcleft + " : '" + func.getName() + "' mora oznacavati metodu un.klase ili glob. metodu.", null);
              return result;
         }
 
@@ -725,7 +724,7 @@ parser code {:
 
         if(!isAssignableType(d)) {
 
-           report_error("Semanticka greska [2S-27] na liniji " + dleft + " : name u read izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+           report_error("Semanticka greska [2S-27] na liniji " + dleft + " : '" + d.getName() + "' u read izrazu mora biti promenljiva, elem niza ili polje klase.", null);
            isOk = false;
 
         }
@@ -757,7 +756,7 @@ parser code {:
 
         if(!isAssignableType(d)) {
 
-           report_error("Semanticka greska [2S-19] na liniji " + dleft + " : name sa leve strane izraza dodele vrednosti mora biti promenljiva, elem niza ili polje klase.", null);
+           report_error("Semanticka greska [2S-19] na liniji " + dleft + " : '" + d.getName() + "' sa leve strane izraza dodele vrednosti mora biti promenljiva, elem niza ili polje klase.", null);
            isOk = false;
         }
 
@@ -776,7 +775,7 @@ parser code {:
 
         if(!isAssignableType(d)) {
 
-           report_error("Semanticka greska [2S-21] na liniji " + dleft + " : name u increment/decrement izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+           report_error("Semanticka greska [2S-21] na liniji " + dleft + " : '" + d.getName() + "' u increment/decrement izrazu mora biti promenljiva, elem niza ili polje klase.", null);
            isOk = false;
         }
 
@@ -1221,7 +1220,14 @@ C_VarList ::= C_VarList COMMA VarPart
               |
               VarPart;
 
-ClassMethodDecl ::= LBRACE:l {: TabUtils.copySuperClassMethods(); :} ClassMethodList RBRACE;
+ClassMethodDecl ::= LBRACE:l 
+					{: 
+						TabUtils.copySuperClassMethods(); 
+						
+						// Vezu se atributi klase za currentClassObj, da bi mogao da se koristi this u metodama.
+						Tab.chainLocalSymbols(TabUtils.currentClassObj.getType());						
+					:} 
+					ClassMethodList RBRACE;
 
 ClassMethodList ::= ClassMethodList ClassMethodPart
                     |
@@ -1773,8 +1779,7 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
                     |
                     DOT IDENT:name
                     {:
-						//parser.getClassDesignator(name, nameleft);
-                         RESULT = Tab.noObj;
+						RESULT = parser.getClassDesignator(name, nameleft);
                     :};
                     
                     
