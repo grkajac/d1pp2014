@@ -1191,7 +1191,11 @@ ClassDefinition ::= ClassVarList_RBRACE_Recovery
 
 ClassVarList_RBRACE_Recovery ::= ClassVarList ClassMethodDecl RBRACE
                                  |
-                                 ClassVarList RBRACE
+                                 ClassVarList
+                                 {:
+                                 	TabUtils.copySuperClassMethods();
+                                 :}
+                                 RBRACE
                                  |
                                  error RBRACE:l
                                  {:

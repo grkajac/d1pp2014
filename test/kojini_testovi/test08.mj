@@ -39,7 +39,7 @@ program test08
 	}
 	
 	class Gama extends Beta{
-		Beta b;
+		Beta b;						// novo, b vec postoji, nasledjeno iz Beta klase.
 	}
 	
 	Gama g;
