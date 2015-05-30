@@ -1,4 +1,4 @@
-# Homework D1PP2014 description
+# Homework D1PP2015 description
 
 - Dependencies:
 
@@ -23,8 +23,34 @@
     4. JUnit parameterized test compares list of value obtained from json file
        and list of values obtained from actual parser outputs.
        
+       
 
-- Problems:
+1. generisanje lexer-a
 
-	1. TabUtils.assignableTo - prepravi tako da mogu da se porede osnovna i izvedena klasa
-	2. 
+	main: JFlex.Main
+	args: -d src/rs/ac/bg/etf/pp1 spec/mjlexer.flex
+
+2. generisanje parser-a
+
+	main: java_cup.Main
+	args: -destdir src/rs/ac/bg/etf/pp1 -parser MJParser spec/mjparser.cup
+
+3. cup debug
+	  
+	main: java_cup.Main
+	args: -destdir src/rs/ac/bg/etf/pp1 -parser MJParser -dump spec/mjparser.cup
+
+4. Codeout
+
+	main: rs.etf.pp1.mj.runtime.Run
+	args: -debug logs-generatedcode/test301.mj.obj
+
+5. Disasm
+
+	main: rs.etf.pp1.mj.runtime.disasm
+	args: logs-generatedcode/test301.mj.obj
+
+JUNIT
+
+	rs.ac.bg.etf.pp1.GrammarAnalysisTest
+       

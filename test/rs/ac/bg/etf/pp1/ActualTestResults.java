@@ -1,349 +1,336 @@
 package rs.ac.bg.etf.pp1;
 
-import java_cup.runtime.Symbol;
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
-import rs.ac.bg.etf.pp1.util.Log4JUtils;
-import rs.etf.pp1.mj.runtime.Code;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import java_cup.runtime.Symbol;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+
+import rs.ac.bg.etf.pp1.util.Log4JUtils;
+import rs.etf.pp1.mj.runtime.Code;
 
 /**
  * Class generates actual results of tests.
  *
- * User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com
- * Date: 7/23/14
- * Time: 2:42 PM
+ * User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com Date: 7/23/14 Time: 2:42 PM
  */
 public class ActualTestResults {
 
-    public static final String TEST_PATH = "test/kojini_testovi";
-    public static final String CURRENT_PARSED_TEST_PATH = "logs/testResult.log";
-    public static final String PARSED_TESTS_SINGLE_LOG_PATH = "logs-test";
-    public static final String GENERATED_CODE_TEST_PATH = "logs-generatedcode";
+	public static final String TEST_PATH = "test/kojini_testovi";
+	public static final String CURRENT_PARSED_TEST_PATH = "logs/testResult.log";
+	public static final String PARSED_TESTS_SINGLE_LOG_PATH = "logs-test";
+	public static final String GENERATED_CODE_TEST_PATH = "logs-generatedcode";
 
-    private static List<File> testFiles = new ArrayList<>();
-    private static Map<String, TestInfo> results = new HashMap<>();
+	private static List<File> testFiles = new ArrayList<>();
+	private static Map<String, TestResult> results = new HashMap<>();
 
-    private static TestInfo currentTest;
-    private static Pattern errorTagPattern = Pattern.compile("\\[(\\w{2}-\\d{2})\\]( na liniji (\\d+))?|(test\\d{2,3}\\.mj)");
+	private static TestResult currentTest;
+	private static Pattern errorTagPattern = Pattern.compile("\\[(\\w{2}-\\d{2})\\]( na liniji (\\d+))?|(test\\d{2,3}\\.mj)");
 
-    static {
+	static {
 
-        DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());
+		DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());
 
-        Log4JUtils.instance().prepareLogTestResultFile(Logger.getRootLogger());
+		Log4JUtils.instance().prepareLogTestResultFile(Logger.getRootLogger());
+	}
 
-    }
+	public static Map<String, TestResult> getResults() {
 
-    public static Map<String, TestInfo> getResults() {
+		readTestFiles(new File(TEST_PATH));
 
-        readTestFiles(new File(TEST_PATH));
+		parseResults();
 
-        parseResults();
+		return results;
+	}
 
-        return results;
-    }
+	private static void readTestFiles(final File folder) {
 
-    private static void readTestFiles(final File folder) {
+		for (final File fileEntry : folder.listFiles()) {
 
-        for (final File fileEntry : folder.listFiles()) {
+			if (!fileEntry.isDirectory()) {
 
-            if (!fileEntry.isDirectory()) {
+				testFiles.add(fileEntry);
+			}
+		}
+	}
 
-                testFiles.add(fileEntry);
+	/**
+	 * Create results that are parsed from actual test files.
+	 *
+	 * For example, we have written test, (test01.mj).
+	 *
+	 * That test is loaded and analized by compiler. Compiler output is stored in result file. That result file is analyzed, via regex, if
+	 * it contains any syntax, semantic or counting error.
+	 */
+	private static void parseResults() {
 
-            }
-        }
-    }
+		// Clearing logs for all tests, each test contains single log for itself.
+		clearAllTestSingleLog(new File(PARSED_TESTS_SINGLE_LOG_PATH));
 
-    /**
-     * Create results that are parsed from actual test files.
-     *
-     * For example, we have written test, (test01.mj).
-     *
-     * That test is loaded and analized by compiler.
-     * Compiler output is stored in result file.
-     * That result file is analyzed, via regex, if it contains any syntax, semantic or counting error.
-     */
-    private static void parseResults() {
+		// Clearing same thing for test that is used for generating code.
+		clearAllTestSingleLog(new File(GENERATED_CODE_TEST_PATH));
 
-        // Clearing logs for all tests, each test contains single log for itself.
-        clearAllTestSingleLog(new File(PARSED_TESTS_SINGLE_LOG_PATH));
+		for (File testFile : testFiles) {
 
-        // Clearing same thing for test that is used for generating code.
-        clearAllTestSingleLog(new File(GENERATED_CODE_TEST_PATH));
+			clearLogFile(new File(CURRENT_PARSED_TEST_PATH));
 
-        for (File testFile : testFiles) {
+			startTest(testFile);
 
-            clearLogFile(new File(CURRENT_PARSED_TEST_PATH));
+			parseCurrentTest();
+		}
 
-            startTest(testFile);
+	}
 
-            parseCurrentTest();
+	/**
+	 * Clears log file where compiler output is stored.
+	 * 
+	 * @param logFile
+	 */
+	private static void clearLogFile(final File logFile) {
 
-        }
+		PrintWriter writer = null;
 
-    }
+		try {
 
-    /**
-     * Clears log file where compiler output is stored.
-     * @param logFile
-     */
-    private static void clearLogFile(final File logFile) {
+			writer = new PrintWriter(logFile);
+			writer.print("");
 
-        PrintWriter writer = null;
+		} catch (FileNotFoundException e) {
 
-        try {
+			System.out.println("Nije nadjen fajl prilikom ciscenja konteksta!!!");
+			e.printStackTrace();
 
-            writer = new PrintWriter(logFile);
+		} finally {
 
-            writer.print("");
+			writer.close();
+		}
+	}
 
-        } catch (FileNotFoundException e) {
+	private static void clearAllTestSingleLog(final File testLogsFolder) {
 
-            System.out.println("Nije nadjen fajl prilikom ciscenja konteksta!!!");
+		for (final File fileEntry : testLogsFolder.listFiles()) {
 
-            e.printStackTrace();
+			if (!fileEntry.isDirectory()) {
 
-        } finally {
+				clearLogFile(fileEntry);
+			}
+		}
+	}
 
-            writer.close();
+	private static void startTest(File testFile) {
 
-        }
-    }
+		Reader br = null;
 
-    private static void clearAllTestSingleLog(final File testLogsFolder) {
+		Logger log = Logger.getLogger(ActualTestResults.class);
 
-        for (final File fileEntry : testLogsFolder.listFiles()) {
+		currentTest = new TestResult();
 
-            if (!fileEntry.isDirectory()) {
+		try {
 
-                clearLogFile(fileEntry);
+			log.info("\n======================================================\n");
+			log.info("Compiling source file: " + testFile.getAbsolutePath());
 
-            }
-        }
-    }
+			br = new BufferedReader(new FileReader(testFile));
+			Yylex lexer = new Yylex(br);
 
+			TabUtils.resetAll();
 
-    private static void startTest(File testFile) {
+			MJParser p = new MJParser(lexer);
+			Symbol s = p.parse(); // pocetak parsiranja
 
-        Reader br = null;
+			// Level II
 
-        Logger log = Logger.getLogger(ActualTestResults.class);
+			Brojanje testCounts = currentTest.getBrojanje();
 
-        currentTest = new TestInfo();
+			log.info("Broj deklaracija globalnih promenljivih prostog tipa = " + p.globalPrimitiveVarsCount);
+			testCounts.setGlob_promenljivih(p.globalPrimitiveVarsCount);
 
-        try {
+			log.info("Broj deklaracija globalnih nizova = " + p.globalArraysCount);
+			testCounts.setGlob_nizova(p.globalArraysCount);
 
-            log.info("\n======================================================\n");
-            log.info("Compiling source file: " + testFile.getAbsolutePath());
+			log.info("Broj definicija funkcija u glavnom programu = " + p.globalFunctionsCount);
+			testCounts.setFunkcija(p.globalFunctionsCount);
 
-            br = new BufferedReader(new FileReader(testFile));
-            Yylex lexer = new Yylex(br);
+			log.info("Broj definicija unutrašnjih klasa = " + p.innerClassesCount);
+			testCounts.setUn_klasa(p.innerClassesCount);
 
-            TabUtils.resetAll();
+			log.info("Broj blokova naredbi = " + p.statementsCount);
+			testCounts.setBlokova_naredbi(p.statementsCount);
 
-            MJParser p = new MJParser(lexer);
-            Symbol s = p.parse();  //pocetak parsiranja
+			log.info("Broj poziva funkcija u telu metode main = " + p.functionCallsInMainCount);
+			testCounts.setPoziva_funkcija(p.functionCallsInMainCount);
 
-            // Level II
+			log.info("Broj naredbi instanciranja objekata = " + p.objectCreationCount);
+			testCounts.setInstanciranja(p.objectCreationCount);
 
-            Brojanje testCounts = currentTest.getBrojanje();
+			log.info("Broj definicija metoda unutrašnjih klasa = " + p.innerClassMethodsCount);
+			testCounts.setMetoda(p.innerClassMethodsCount);
 
-            log.info("Broj deklaracija globalnih promenljivih prostog tipa = " + p.globalPrimitiveVarsCount);
-            testCounts.setGlob_promenljivih(p.globalPrimitiveVarsCount);
+			log.info("Broj deklaracija polja unutrašnjih klasa = " + p.innerClassAttributesCount);
+			testCounts.setAtributa(p.innerClassAttributesCount);
 
-            log.info("Broj deklaracija globalnih nizova = " + p.globalArraysCount);
-            testCounts.setGlob_nizova(p.globalArraysCount);
+			log.info("Broj izvodjenja klasa = " + p.extendingClassesCount);
+			testCounts.setIzvodjenja(p.extendingClassesCount);
 
-            log.info("Broj definicija funkcija u glavnom programu = " + p.globalFunctionsCount);
-            testCounts.setFunkcija(p.globalFunctionsCount);
-
-            log.info("Broj definicija unutrašnjih klasa = " + p.innerClassesCount);
-            testCounts.setUn_klasa(p.innerClassesCount);
-
-            log.info("Broj blokova naredbi = " + p.statementsCount);
-            testCounts.setBlokova_naredbi(p.statementsCount);
-
-            log.info("Broj poziva funkcija u telu metode main = " + p.functionCallsInMainCount);
-            testCounts.setPoziva_funkcija(p.functionCallsInMainCount);
-
-            log.info("Broj naredbi instanciranja objekata = " + p.objectCreationCount);
-            testCounts.setInstanciranja(p.objectCreationCount);
-
-            log.info("Broj definicija metoda unutrašnjih klasa = " + p.innerClassMethodsCount);
-            testCounts.setMetoda(p.innerClassMethodsCount);
-
-            log.info("Broj deklaracija polja unutrašnjih klasa = " + p.innerClassAttributesCount);
-            testCounts.setAtributa(p.innerClassAttributesCount);
-
-            log.info("Broj izvodjenja klasa = " + p.extendingClassesCount);
-            testCounts.setIzvodjenja(p.extendingClassesCount);
-
-            // Level III
+			// Level III
 
 //            Tab.dump();
 
-            if (!p.errorDetected) {
+			if (!p.errorDetected) {
 
-                log.info("Parsiranje USPESNO zavrseno :)");
+				log.info("Parsiranje USPESNO zavrseno :)");
 
-                if(testFile.getName().matches("test\\d{3}\\.mj")) {
+				if (testFile.getName().matches("test\\d{3}\\.mj")) {
 
-                    File codeGenFile = new File(GENERATED_CODE_TEST_PATH + "/" + testFile.getName() + ".obj");
+					File codeGenFile = new File(GENERATED_CODE_TEST_PATH + "/" + testFile.getName() + ".obj");
 
-                    Code.write(new FileOutputStream(codeGenFile));
-                }
+					Code.write(new FileOutputStream(codeGenFile));
+				}
 
-            } else {
+			} else {
 
-                log.error("Parsiranje ima GRESKE :(");
+				log.error("Parsiranje ima GRESKE :(");
+			}
+			log.info("\n======================================================\n");
 
-            }
+		} catch (Exception e) {
 
-            log.info("\n======================================================\n");
+			e.printStackTrace();
 
-        } catch (Exception e) {
+		} finally {
 
-            e.printStackTrace();
+			if (br != null) {
 
-        } finally {
+				try {
 
-            if (br != null) {
+					br.close();
 
-                try {
+				} catch (IOException e1) {
 
-                    br.close();
+					System.out.println("GrammarError u testu");
+				}
+			}
+		}
 
-                } catch (IOException e1) {
+	}
 
-                    System.out.println("GrammarError u testu");
+	/**
+	 * Parse processed test result from file.
+	 *
+	 * Each line from file is analized and if line contains error then error is putted into specific list based on error type.
+	 *
+	 * For example if line contains syntax error it goes to syntax error list, same thing is for semantic and counting errors.
+	 */
+	private static void parseCurrentTest() {
 
-                }
-            }
-        }
+		boolean isParsingOk = true;
+		Scanner scanner = null;
 
-    }
+		try {
 
-    /**
-     * Parse processed test result from file.
-     *
-     * Each line from file is analized and if line contains error then error is putted into
-     * specific list based on error type.
-     *
-     * For example if line contains syntax error it goes to syntax error list,
-     * same thing is for semantic and counting errors.
-     */
-    private static void parseCurrentTest() {
+			scanner = new Scanner(new File(CURRENT_PARSED_TEST_PATH));
 
-        boolean isParsingOk = true;
+			String line;
+			Matcher matcher = null;
 
-        Scanner scanner = null;
+			while (scanner.hasNextLine()) {
 
-        try {
+				line = scanner.nextLine();
 
-            scanner = new Scanner(new File(CURRENT_PARSED_TEST_PATH));
+				matcher = errorTagPattern.matcher(line);
 
-            String line;
+				if (matcher.find()) {
 
-            Matcher matcher = null;
+					setTestName(matcher.group(4));
 
-            while (scanner.hasNextLine()) {
+					addGrammarError(line, matcher.group(1), matcher.group(3));
+				}
+			}
 
-                line = scanner.nextLine();
+			Files.copy(new File(CURRENT_PARSED_TEST_PATH).toPath(), new File(PARSED_TESTS_SINGLE_LOG_PATH + "/" + currentTest.getName()
+					+ ".log").toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-                matcher = errorTagPattern.matcher(line);
+		} catch (Exception e) {
 
-                if (matcher.find()) {
+			e.printStackTrace();
+			isParsingOk = false;
 
-                    setTestName(matcher.group(4));
+		} finally {
 
-                    addGrammarError(line, matcher.group(1), matcher.group(3));
-                }
-            }
+			if (scanner != null) {
 
-            Files.copy(new File(CURRENT_PARSED_TEST_PATH).toPath(),
-                       new File(PARSED_TESTS_SINGLE_LOG_PATH + "/" + currentTest.getName() + ".log").toPath(),
-                       StandardCopyOption.REPLACE_EXISTING);
+				try {
 
-        } catch (Exception e) {
+					scanner.close();
 
-            e.printStackTrace();
+				} catch (Exception e1) {
 
-            isParsingOk = false;
+					System.out.println("GrammarError u citanju " + CURRENT_PARSED_TEST_PATH);
+				}
+			}
+		}
 
-        } finally {
+		if (isParsingOk) {
 
-            if (scanner != null) {
+			results.put(currentTest.getName(), currentTest);
+		}
+	}
 
-                try {
+	/**
+	 * Sets name for current test.
+	 *
+	 * @param testName
+	 */
+	private static void setTestName(String testName) {
 
-                    scanner.close();
+		if (testName != null) {
 
-                } catch (Exception e1) {
+			currentTest.setName(testName);
+		}
+	}
 
-                    System.out.println("GrammarError u citanju " + CURRENT_PARSED_TEST_PATH);
+	/**
+	 * Adds grammar error if pattern is matched for processed line.
+	 *
+	 * @param line
+	 * @param errorDescription
+	 * @param errorLine
+	 */
+	private static void addGrammarError(String line, String errorDescription, String errorLine) {
 
-                }
-            }
-        }
+		Integer errLine = (errorLine != null) ? Integer.valueOf(errorLine) : 0;
 
-        if (isParsingOk) {
+		if (line.contains("Sintaksna greska")) {
 
-            results.put(currentTest.getName(), currentTest);
+			currentTest.addSyntaxError(new GrammarError(errorDescription, errLine));
+		}
 
-        }
-    }
+		if (line.contains("Semanticka greska")) {
 
-    /**
-     * Sets name for current test.
-     *
-     * @param testName
-     */
-    private static void setTestName(String testName) {
+			currentTest.addSemanticError(new GrammarError(errorDescription, errLine));
+		}
+	}
 
-        if (testName != null) {
+	public static void main(String[] args) {
 
-            currentTest.setName(testName);
-
-        }
-    }
-
-    /**
-     * Adds grammar error if pattern is matched for processed line.
-     *
-     * @param line
-     * @param errorDescription
-     * @param errorLine
-     */
-    private static void addGrammarError(String line, String errorDescription, String errorLine) {
-
-        String desc = errorDescription;
-
-        Integer errLine = (errorLine != null) ? Integer.valueOf(errorLine) : 0;
-
-        if (line.contains("Sintaksna greska")) {
-
-            currentTest.addSyntaxError(new GrammarError(desc, errLine));
-
-        }
-
-        if (line.contains("Semanticka greska")) {
-
-            currentTest.addSemanticError(new GrammarError(desc, errLine));
-
-        }
-    }
-
-    public static void main(String[] args) {
-
-        // for testing purpose
-        getResults();
-    }
+		// for testing purpose
+		getResults();
+	}
 }

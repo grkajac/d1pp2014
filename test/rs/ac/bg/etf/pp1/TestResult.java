@@ -11,7 +11,7 @@ import java.util.List;
  * Date: 7/18/14 Time: 5:23 PM
  *
  */
-public class TestInfo {
+public class TestResult {
 
     private String name;
 
@@ -21,7 +21,7 @@ public class TestInfo {
 
     private List<GrammarError> semanticErrorList;
 
-    public TestInfo() {
+    public TestResult() {
 
         brojanje = new Brojanje();
 

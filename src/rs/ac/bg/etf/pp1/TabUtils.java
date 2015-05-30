@@ -24,8 +24,6 @@ public class TabUtils {
 
 	public static boolean hasMainFunc = false;
 
-	public static boolean isSingleName = false;
-
 	public static boolean conditionError = false;
 
 	public static Obj currentMethodObj = Tab.noObj;
@@ -67,8 +65,6 @@ public class TabUtils {
 		resetMethodsFlags();
 
 		hasMainFunc = false;
-
-		isSingleName = false;
 
 		conditionError = false;
 

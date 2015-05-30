@@ -47,6 +47,7 @@ import java_cup.runtime.Symbol;
 "new"       {return new_symbol(sym.NEW, yytext());}
 "print"     {return new_symbol(sym.PRINT, yytext());}
 "read"      {return new_symbol(sym.READ, yytext());}
+"len"      {return new_symbol(sym.LEN, yytext());}
 "return"    {return new_symbol(sym.RETURN, yytext());}
 "void" 	    {return new_symbol(sym.VOID, yytext());}
 "while"     {return new_symbol(sym.WHILE, yytext());}
