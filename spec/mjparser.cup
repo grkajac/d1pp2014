@@ -77,62 +77,71 @@ parser code {:
 
         Obj konstanta = Tab.find(id);
 
+		// Vec definisana konstanta
         if (!Tab.noObj.equals(konstanta)) {
          	report_error("Semanticka greska [2S-07] na liniji " + idleft + " : [R76] Ime konstante '" + konstanta.getName() + "' je vec definisano", null);
        		return konstanta;
         }
 
-        switch(node){
-            case NUMBER:
-
-                if(!Tab.intType.equals(type)) {
-                   report_error("Semanticka greska [2S-03] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije int", null);
-                   break;
-                }
-                 
-                konstanta = Tab.insert(Obj.Con, id, type);
-                report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
-                break;
-
-            case CHAR:
-
-                    if(Tab.charType.equals(type)) {
-
-                       konstanta = Tab.insert(Obj.Con, id, type);
-                       report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
-                    } else {
-                       report_error("Semanticka greska [2S-04] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije char", null);
-                    }
-                break;
-
-            case BOOL:
-
-                    if(TabUtils.boolType.equals(type)) {
-
-                       konstanta = Tab.insert(Obj.Con, id, type);
-                       report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
-                    } else {
-                       report_error("Semanticka greska [2S-05] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije bool", null);
-                    }
-                break;
-
-            case STRING:
-
-                if(TabUtils.stringType.equals(type)) {
-
-                   konstanta = Tab.insert(Obj.Con, id, type);
-                   report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
-                } else {
-                   report_error("Semanticka greska [2S-06] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije string", null);
-                }
-                break;
-        }
-    
+		// NUMBER
+		if(ConstNode.NUMBER.equals(node)) {
+			
+			if(!Tab.intType.equals(type)) {
+               report_error("Semanticka greska [2S-03] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije int", null);
+               return Tab.noObj;
+            }
+             
+            konstanta = Tab.insert(Obj.Con, id, type);
+            report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
+            return konstanta;
+		}
+		
+		// CHAR
+		if(ConstNode.CHAR.equals(node)) {
+			
+			if(!Tab.charType.equals(type)) {
+               report_error("Semanticka greska [2S-04] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije char", null);
+			   return Tab.noObj;
+            } 
+           
+           konstanta = Tab.insert(Obj.Con, id, type);
+           report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
+           return konstanta;
+		}
+		
+		// BOOL
+		if(ConstNode.BOOL.equals(node)) {
+		
+           if(!TabUtils.boolType.equals(type)) {
+              report_error("Semanticka greska [2S-05] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije bool", null);
+			  return Tab.noObj;
+           }
+           
+           konstanta = Tab.insert(Obj.Con, id, type);
+           report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
+           return konstanta;
+		}
+		
+		// STRING
+		if(ConstNode.STRING.equals(node)) {
+		
+		   if(!TabUtils.stringType.equals(type)) {
+              report_error("Semanticka greska [2S-06] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije string", null);
+              return Tab.noObj;
+           }
+           
+           konstanta = Tab.insert(Obj.Con, id, type);
+           report_info("Nadjena konstanta na liniji " + idleft + " | " + TabUtils.printObj(konstanta), null);
+           return konstanta;
+		}
+		
+		report_info("Nije setovan ConstNode objekat metode constantProcessing", null);
         return konstanta;
     }
 
     public void varProcessing(String id, int idleft, Struct type, VarNode node) {
 
+		// Provera tipa
         if(Tab.noType.equals(type)) {
            report_error("Semanticka greska [2S-08] na liniji " + idleft + " : Tip promenljive nije definisan", null);
            return;
@@ -140,85 +149,79 @@ parser code {:
 
         Obj promenljiva = Tab.currentScope().findSymbol(id);
 
-        if(promenljiva == null) {
-            promenljiva =  Tab.noObj;
-        }
-
-        if (Tab.noObj.equals(promenljiva)) {
-
-            Obj prom;
-
-            switch(node){
-                case GLOBAL_VAR:
-
-                    prom = Tab.insert(Obj.Var, id, type);
-
-                    globalPrimitiveVarsCount++;
-
-                    report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
-                    break;
-
-                case CLASS_VAR:
-
-                    prom = Tab.insert(Obj.Fld, id, type);
-
-                    if(!"this".equals(id)) {
-
-                        innerClassAttributesCount++;
-
-                        report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
-                    }
-                    break;
-
-                case METHOD_LOCAL_VAR:
-
-                    prom = Tab.insert(Obj.Var, id, type);
-                    report_info("Nadjena lokalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
-                    break;
-
-                case METHOD_FORMAL_VAR:
-
-                    prom = Tab.insert(Obj.Var, id, type);
-                    setFormalParam(prom);
-                    TabUtils.formalParamCount++;
-                    break;
-
-                case GLOBAL_ARRAY_VAR:
-
-                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
-                    globalArraysCount++;
-                    report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
-                    break;
-
-                case CLASS_ARRAY_VAR:
-
-                    prom = Tab.insert(Obj.Fld, id, new Struct(Struct.Array, type));
-
-                    if(!"this".equals(id)) {
-
-                         innerClassAttributesCount++;
-
-                        report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
-                    }
-                    break;
-
-                case METHOD_LOCAL_ARRAY_VAR:
-
-                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
-                    report_info("Nadjena lokalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
-                    break;
-
-                case METHOD_FORMAL_ARRAY_VAR:
-
-                    prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
-                    setFormalParam(prom);
-                    TabUtils.formalParamCount++;
-                    break;
-            }
-        }
-        else {
+		// Provera da li je promenljiva vec definisana
+        if(promenljiva != null && !Tab.noObj.equals(promenljiva)) {
             report_error("Semanticka greska [2S-09] na liniji " + idleft + " - Ime promeljive '" + promenljiva.getName() + "' je vec definisano", null);
+        	return;
         }
+
+		// GLOBAL_VAR
+		if(VarNode.GLOBAL_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Var, id, type);
+            globalPrimitiveVarsCount++;
+            report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+		}
+
+		// CLASS_VAR
+		if(VarNode.CLASS_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Fld, id, type);
+            if(!"this".equals(id)) {
+                innerClassAttributesCount++;
+                report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+            }
+		}
+		
+		// METHOD_LOCAL_VAR
+		if(VarNode.METHOD_LOCAL_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Var, id, type);
+			report_info("Nadjena lokalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+		}
+
+		// METHOD_FORMAL_VAR
+		if(VarNode.METHOD_FORMAL_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Var, id, type);
+            setFormalParam(prom);
+            TabUtils.formalParamCount++;
+		}
+
+		// GLOBAL_ARRAY_VAR
+		if(VarNode.GLOBAL_ARRAY_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
+            globalArraysCount++;
+            report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+		}
+
+		// CLASS_ARRAY_VAR
+		if(VarNode.CLASS_ARRAY_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Fld, id, new Struct(Struct.Array, type));
+
+            if(!"this".equals(id)) {
+
+                innerClassAttributesCount++;
+                report_info("Nadjeno polje unutrasnje klase na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+            }
+		}
+
+		// METHOD_LOCAL_ARRAY_VAR
+		if(VarNode.METHOD_LOCAL_ARRAY_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
+            report_info("Nadjena lokalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
+		}
+
+		// METHOD_FORMAL_ARRAY_VAR
+		if(VarNode.METHOD_FORMAL_ARRAY_VAR.equals(node)) {
+			
+			Obj prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
+            setFormalParam(prom);
+            TabUtils.formalParamCount++;
+		}
     }
 
     public void setFormalParam(Obj formParam) {
