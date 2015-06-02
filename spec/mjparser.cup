@@ -230,60 +230,64 @@ parser code {:
 
 	// Dodaju se atributi nadklase.
 	
-    public void copySuperClassAtributes(String superClass, Obj baseClass, int superClassleft) {
+    public boolean copySuperClassAtributes(String superClass, Obj baseClass, int superClassleft) {
 
         TabUtils.currentSuperClassObj = getSuperClassObj(superClass, superClassleft);
         
-        if(!Tab.noObj.equals(TabUtils.currentSuperClassObj)) {
-	        
-			Collection<Obj> superClassMembers = TabUtils.currentSuperClassObj.getType().getMembers();
-			
-			for(Obj member: superClassMembers) {
-				if(Obj.Fld == member.getKind()) {
-					Tab.currentScope().addToLocals(member);
-				}
+        // Super klasa nije nadjena
+        if(Tab.noObj.equals(TabUtils.currentSuperClassObj)) {
+			return false;			
+		}
+		
+		// Za nadjenu superklasu, kopiraj sve nasledjene atribute u izvedenu klasu
+		Collection<Obj> superClassMembers = TabUtils.currentSuperClassObj.getType().getMembers();
+		
+		for(Obj member: superClassMembers) {
+			if(Obj.Fld == member.getKind()) {
+				Tab.currentScope().addToLocals(member);
 			}
 		}
+		
+		return true;
     }
 
     public Obj getSuperClassObj(String superClass, int superClassleft) {
-
-        Obj result = Tab.noObj;
-        if(superClass != null){
-
-            Obj superClassObj = Tab.find(superClass);
-            
-            if(Tab.noObj.equals(superClassObj)) {
-
-                report_error("Semanticka greska [2S-11] na liniji " + superClassleft + " - nadklasa nije definisana", null);
-            } else if(superClassObj.getKind() != Obj.Type && !Tab.nullType.equals(superClassObj.getType())){
-
-                report_error("Semanticka greska [2S-12] na liniji " + superClassleft + " - Nadklasa nije tip i nije tipa klase", null);
-            } else {
-
-                extendingClassesCount++;
-                result = superClassObj;
-            }
+        
+        if(superClass == null) {
+        	return Tab.noObj;
         }
-        return result;
+
+        Obj superClassObj = Tab.find(superClass);
+        
+        if(Tab.noObj.equals(superClassObj)) {
+
+            report_error("Semanticka greska [2S-11] na liniji " + superClassleft + " - nadklasa nije definisana", null);
+            return Tab.noObj; 
+        } 
+        
+        if(superClassObj.getKind() != Obj.Type && !Tab.nullType.equals(superClassObj.getType())){
+
+            report_error("Semanticka greska [2S-12] na liniji " + superClassleft + " - Nadklasa nije tip i nije tipa klase", null);
+            return Tab.noObj;
+        } 
+        
+        return superClassObj;
     }
 
     public Obj classProcessing(String baseClass, int baseClassleft) {
 
-        Obj returnObj = Tab.noObj;
-
         Obj baseClassObj = Tab.find(baseClass);
-        if(Tab.noObj.equals(baseClassObj)) {
-
-            TabUtils.currentClassObj = Tab.insert(Obj.Type, baseClass, new Struct(Struct.Class));
-
-            returnObj = TabUtils.currentClassObj;
-
-            innerClassesCount++;
-        } else {
+        
+         if(!Tab.noObj.equals(baseClassObj)) {
             report_error("Semanticka greska [2S-10] na liniji " + baseClassleft + " : [R84] Ime klase je vec definisano", null);
-        }
-        return returnObj;
+            return Tab.noObj;
+         }
+        
+        TabUtils.currentClassObj = Tab.insert(Obj.Type, baseClass, new Struct(Struct.Class));
+
+        innerClassesCount++;
+        
+        return TabUtils.currentClassObj;
     }
 
 	// TODO
@@ -1098,7 +1102,11 @@ ClassExtendsLB_Recovery ::= IDENT:baseClass EXTENDS IDENT:superClass LBRACE
 
                                 Tab.openScope();
 
-                                parser.copySuperClassAtributes(superClass, RESULT, superClassleft);
+                                boolean isCopyingSuccessful = parser.copySuperClassAtributes(superClass, RESULT, superClassleft);
+                                
+                                if(isCopyingSuccessful) {
+                                	parser.extendingClassesCount++;
+                                }
                             :}
                             |
                             IDENT:baseClass LBRACE
