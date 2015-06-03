@@ -72,6 +72,25 @@ parser code {:
     /*
      * util functions
      */
+     
+     public Struct getType(String typeName, int typeNameleft) {
+     
+     	Obj typeNode = Tab.find(typeName);
+
+        TabUtils.currentTypeNameUses = typeName;
+
+        if (typeNode.equals(Tab.noObj)) {
+            report_error("Semanticka greska - [2S-01] Nije pronadjen tip '" + typeName + "' u tabeli simbola", null);
+            return Tab.noType;
+        }
+        
+        if (Obj.Type != typeNode.getKind()) {
+            report_error("Semanticka greska [2S-02] na liniji " + typeNameleft + " : Ime " + typeName + " ne predstavlja tip ", null);
+            return Tab.noType;
+        }
+     
+        return typeNode.getType();
+     }
 
     public Obj constantProcessing(String id, int idleft, Struct type, ConstNode node) {
 
@@ -290,44 +309,6 @@ parser code {:
         return TabUtils.currentClassObj;
     }
 
-	// TODO
-    public boolean addAbstractClass(Obj absClass, ScopeNode scope) {
-
-        boolean result = false;
-
-        if(!Tab.noObj.equals(absClass) && ScopeNode.ABSTRACT_CLASS.equals(scope)) {
-            TabUtils.abstractClasses.put(absClass.getName(), absClass);
-            result = true;
-        }
-        return result;
-    }
-
-	// TODO
-    public void checkAbstractMethodExists(ScopeNode scope) {
-
-        if(ScopeNode.CLASS.equals(scope) && TabUtils.hasAbstractMethod) {
-            report_error("Semanticka greska: [2S-50] Klasa MORA biti apstraktna, posto sadrzi abs. metodu/e", null);
-        }
-
-        if(ScopeNode.ABSTRACT_CLASS.equals(scope) && !TabUtils.hasAbstractMethod) {
-           report_error("Semanticka greska : [2S-51] Abstrakna klasa MORA imati bar jednu abs. metodu", null);
-        }
-
-        TabUtils.hasAbstractMethod = false;
-    }
-
-	// TODO
-    public void checkIfAbstractMethodsAreImplemented (Obj classObj, ScopeNode scope) {
-
-        if(ScopeNode.ABSTRACT_CLASS.equals(scope)) {
-            return;
-        }
-
-        if(!TabUtils.isAllAbstractMethodsImplemented(classObj)) {
-           report_error("Semanticka greska : [2S-52] Klasa MORA implementirati sve aps. metode nadklase!", null);
-        }
-    }
-
     public void countMethods(ScopeNode scope){
         switch(scope){
             case GLOBAL:
@@ -393,12 +374,14 @@ parser code {:
     public Struct getRefArray(Struct type, Struct expr, int exprleft){
 
        Struct result = Tab.noType;
-
+	   
+	   /*
        if(TabUtils.isAbstractClass()){
 
           report_error("Semanticka greska [2S-37] na liniji " + exprleft + " :[R104] kreiranje niza tipom apstraktne klase!", null);
           return result;
        }
+	   */
 
        if(Tab.intType.equals(expr)){
 
@@ -415,11 +398,13 @@ parser code {:
 
         Struct result = Tab.noType;
 
+		/*
         if(TabUtils.isAbstractClass()){
 
           report_error("Semanticka greska [2S-39] na liniji " + typeleft + " :[R104] kreiranje objekta tipom apstraktne klase!", null);
           return result;
         }
+        */
 
         if(type.getKind() == Struct.Class){
            result = type;
@@ -938,24 +923,7 @@ GlobalDeclPart ::=  ConstDecl
 
 Type ::= IDENT:typeName
          {:
-            Obj typeNode = Tab.find(typeName);
-
-            TabUtils.currentTypeNameUses = typeName;
-
-            if (typeNode.equals(Tab.noObj)) {
-
-                parser.report_error("Semanticka greska - [2S-01] Nije pronadjen tip '" + typeName + "' u tabeli simbola", null);
-                RESULT = Tab.noType;
-            }
-            else {
-                if (Obj.Type == typeNode.getKind()) {
-                    RESULT = typeNode.getType();
-                }
-                else {
-                    parser.report_error("Semanticka greska [2S-02] na liniji " + typeNameleft + " : Ime " + typeName + " ne predstavlja tip ", null);
-                    RESULT = Tab.noType;
-                }
-            }
+            RESULT = parser.getType(typeName, typeNameleft);
         :};
         
 // ---------------------- CONST DECL --------------------------
@@ -1077,12 +1045,6 @@ ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
                  if(!Tab.noObj.equals(classObj)){
 
                     Tab.chainLocalSymbols(classObj.getType());
-
-                    parser.addAbstractClass(classObj, scope);
-
-                    parser.checkAbstractMethodExists(scope);
-
-                    // parser.checkIfAbstractMethodsAreImplemented(classObj, scope);
                     
                     TabUtils.repairThisParameter();
 
@@ -1246,10 +1208,6 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                      if(!TabUtils.isMethodExist) {
                          parser.checkReturnExp(methName.getName());
                          parser.setMethodParams(methName);
-
-                         if(ScopeNode.ABSTRACT_CLASS.equals(scope)) {
-                            TabUtils.addAbstractMethod(TabUtils.currentClassObj.getName(), TabUtils.currentMethodObj);
-                         }
                      }
 
                      TabUtils.resetMethodsFlags();

@@ -7,8 +7,6 @@ package rs.ac.bg.etf.pp1;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
@@ -49,12 +47,6 @@ public class TabUtils {
 
 	public static boolean inWhile = false;
 
-	// abstract classes
-	public static Map<String, Obj> abstractClasses = new HashMap<String, Obj>();
-	public static Map<String, ArrayList<Obj>> abstractMethods = new HashMap<String, ArrayList<Obj>>();
-
-	public static Map<String, Obj> extendedClasses = new HashMap<String, Obj>();
-
 	public static String currentTypeNameUses;
 	public static boolean hasAbstractMethod = false;
 
@@ -78,12 +70,6 @@ public class TabUtils {
 
 		inWhile = false;
 
-		// abstract classes
-		abstractClasses = new HashMap<String, Obj>();
-		abstractMethods = new HashMap<String, ArrayList<Obj>>();
-
-		extendedClasses = new HashMap<String, Obj>();
-
 		currentTypeNameUses = null;
 		hasAbstractMethod = false;
 
@@ -105,63 +91,12 @@ public class TabUtils {
 		isMethodExist = false;
 	}
 
-	public static boolean isAbstractClass() {
-
-		return abstractClasses.containsKey(currentTypeNameUses);
-	}
-
 	public static String printObj(Obj obj) {
 
 		DumpSymbolTableVisitor visitor = new DumpSymbolTableVisitor();
 		visitor.visitObjNode(obj);
 
 		return visitor.getOutput();
-	}
-
-	public static void addAbstractMethod(String absClassName, Obj methObj) {
-
-		ArrayList<Obj> listOfMethods = abstractMethods.get(absClassName);
-
-		if (listOfMethods == null) {
-
-			listOfMethods = new ArrayList<Obj>();
-
-			listOfMethods.add(methObj);
-
-			abstractMethods.put(absClassName, listOfMethods);
-
-		} else {
-
-			listOfMethods.add(methObj);
-		}
-	}
-
-	public static boolean isAllAbstractMethodsImplemented(Obj classObj) {
-
-		boolean result = true;
-
-		Obj extendedClass = extendedClasses.get(classObj.getName());
-
-		Obj supClass = abstractClasses.get(extendedClass.getName());
-
-		if (supClass != null) {
-
-			ArrayList<Obj> listaApsMetoda = abstractMethods.get(supClass.getName());
-
-			for (Obj obj : listaApsMetoda) {
-
-				Obj finded = findInCurrentScope(obj.getName());
-
-				// TODO!!!
-				if (obj.getName().equals(finded.getName()) && obj.getKind() == finded.getKind()) {
-					continue;
-				}
-
-				result = false;
-			}
-		}
-
-		return result;
 	}
 
 	/**
