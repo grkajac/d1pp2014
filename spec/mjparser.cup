@@ -349,7 +349,7 @@ parser code {:
 		
 	   if(Tab.noObj.equals(obj)) {
 		   report_error("Semanticka greska [2S-42] na liniji " + nameleft + " : '" + name + "' nije deklarisano! ", null);
-		   return obj;
+		   return Tab.noObj;
 	   }
        return obj;
     }
@@ -365,53 +365,50 @@ parser code {:
 
         if(Tab.noObj.equals(result)) {
            report_error("Semanticka greska [2S-46] na liniji " + nameleft + " : '" + name + "' nije deklarisano unutar klase! ", null);
-        } else {
-           TabUtils.currentDesignatorObj = result;
+           return Tab.noObj;
         }
+       
+        TabUtils.currentDesignatorObj = result;
         return result;
     }
 
     public Struct getRefArray(Struct type, Struct expr, int exprleft){
 
-       Struct result = Tab.noType;
-	   
 	   /*
        if(TabUtils.isAbstractClass()){
 
           report_error("Semanticka greska [2S-37] na liniji " + exprleft + " :[R104] kreiranje niza tipom apstraktne klase!", null);
-          return result;
+          return Tab.noType;
        }
 	   */
 
        if(Tab.intType.equals(expr)){
 
           objectCreationCount++;
-          result = new Struct(Struct.Array, type);
+          Struct result = new Struct(Struct.Array, type);
+          return result;
        }
-       else {
-          report_error("Semanticka greska [2S-38] na liniji " + exprleft + " : broj elemenata niza mora biti tipa int! ", null);
-       }
-       return result;
+       
+       report_error("Semanticka greska [2S-38] na liniji " + exprleft + " : broj elemenata niza mora biti tipa int! ", null);
+       return Tab.noType;
     }
 
     public Struct newTypeStat(Struct type, int typeleft){
-
-        Struct result = Tab.noType;
 
 		/*
         if(TabUtils.isAbstractClass()){
 
           report_error("Semanticka greska [2S-39] na liniji " + typeleft + " :[R104] kreiranje objekta tipom apstraktne klase!", null);
-          return result;
+          return Tab.noType;
         }
         */
 
         if(type.getKind() == Struct.Class){
-           result = type;
-        } else {
-           report_error("Semanticka greska [2S-40] na liniji " + typeleft + " : unut. klasa mora biti koriscenja za new iskaz! ", null);
+           return type;
         }
-        return result;
+
+        report_error("Semanticka greska [2S-40] na liniji " + typeleft + " : unut. klasa mora biti koriscenja za new iskaz! ", null);
+        return Tab.noType;
     }
 
     public boolean isTermsStringCompatible(Struct termLeft, Struct termRight) {
@@ -422,60 +419,57 @@ parser code {:
 
     public Struct addopTerms(Struct termLeft, Struct termRight, int line, int op){
 
-        Struct result = Tab.noType;
-
-        if( !termLeft.compatibleWith(termRight)){
+        if(!termLeft.compatibleWith(termRight)){
              report_error("Semanticka greska [2S-33] na liniji " + line + " : addop izrazi nisu kompatibilni! ", null);
-             return result;
+             return Tab.noType;
         }
 
         if(op == Code.add) {
 
            if(termLeft.getKind() == Struct.Int && termRight.getKind() == Struct.Int) {
-
-              result = Tab.intType;
-           } else if(isTermsStringCompatible(termLeft, termRight)){
-
-               result = TabUtils.stringType;
-           }  else {
-
-               report_error("Semanticka greska [2S-34] na liniji " + line + " : izrazi pri operaciji + moraju biti tipa int ili string! ", null);
+              return Tab.intType;
            }
-        } else if (op == Code.sub) {
+           
+           if(isTermsStringCompatible(termLeft, termRight)){
+               return TabUtils.stringType;
+           }
+
+           report_error("Semanticka greska [2S-34] na liniji " + line + " : izrazi pri operaciji + moraju biti tipa int ili string! ", null);
+           return Tab.noType;
+        } 
+        
+		if (op == Code.sub) {
 
            if(termLeft.getKind() == Struct.Int && termRight.getKind() == Struct.Int) {
-              result = Tab.intType;
-           } else {
-               report_error("Semanticka greska [2S-35] na liniji " + line + " : izrazi pri operaciji -, - moraju biti tipa int! ", null);
-           }
+              return Tab.intType;
+           } 
+			
+           report_error("Semanticka greska [2S-35] na liniji " + line + " : izrazi pri operaciji -, - moraju biti tipa int! ", null);
+           return Tab.noType;
         }
-        return result;
+        
+        return Tab.noType;
     }
 
     public Struct mulopFactors(Struct factorLeft, Struct factorRight, int line){
 
-        Struct result = Tab.noType;
-
         if(factorLeft.getKind() != Struct.Int || factorRight.getKind() != Struct.Int){
-             report_error("Semanticka greska [2S-36] na liniji " + line + " : izrazi pri operacijama *, / i % moraju biti tipa int! ", null);
-        }else {
-            result = Tab.intType;
+           
+            report_error("Semanticka greska [2S-36] na liniji " + line + " : izrazi pri operacijama *, / i % moraju biti tipa int! ", null);
+        	return Tab.noType;
         }
-        return result;
+        
+        return Tab.intType;
     }
 
     public Struct minusTerm(Struct termList, int termlistleft) {
 
-        Struct result = Tab.noType;
-
         if(termList.getKind() == Struct.Int) {
-           result = Tab.intType;
-        } else {
-
-           report_error("Semanticka greska [2S-32] na liniji " + termlistleft + " : iskaz mora biti tipa int", null);
-           result = Tab.noType;
+           return Tab.intType;
         }
-        return result;
+        
+        report_error("Semanticka greska [2S-32] na liniji " + termlistleft + " : iskaz mora biti tipa int", null);
+        return Tab.noType;
     }
 
     // TODO

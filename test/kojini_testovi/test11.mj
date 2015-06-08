@@ -1,6 +1,7 @@
 //nivo C
 //ispravan test
 
+/*
 program TestApstraktneKlase
 	const int PI = 3;
 	int rezultati[];
@@ -115,3 +116,4 @@ program TestApstraktneKlase
 		}
 		
 	}
+*/
