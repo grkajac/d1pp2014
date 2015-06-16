@@ -31,10 +31,10 @@
             "izvodjenja": 0
         },
         "syntaxErrorList": [
-            { "line": 4, "description": "1S-00" },
-            { "line": 7, "description": "1S-02" },
-            { "line": 10, "description": "1S-08" },
-            { "line": 15, "description": "1S-11" }
+            { "line": 4, "description": "S1-00" },
+            { "line": 7, "description": "S1-02" },
+            { "line": 10, "description": "S1-08" },
+            { "line": 15, "description": "S1-11" }
         ],
         "semanticErrorList": [
             { "line": 0, "description": "2S-01" },
@@ -112,10 +112,10 @@
             "izvodjenja": 0
         },
         "syntaxErrorList": [
-            { "line": 6, "description": "1S-02" },
-            { "line": 30, "description": "1S-10" },
-            { "line": 34, "description": "1S-08" },
-            { "line": 39, "description": "1S-14" }
+            { "line": 6, "description": "S1-02" },
+            { "line": 30, "description": "S1-10" },
+            { "line": 34, "description": "S1-08" },
+            { "line": 39, "description": "S1-14" }
         ],
         "semanticErrorList": [
             { "line": 4, "description": "2S-09" },
@@ -188,8 +188,8 @@
             "izvodjenja": 0
         },
         "syntaxErrorList": [
-            { "line": 11, "description": "1S-15" },
-            { "line": 16, "description": "1S-12" }
+            { "line": 11, "description": "S1-15" },
+            { "line": 16, "description": "S1-12" }
         ],
         "semanticErrorList": [
             { "line": 10, "description": "2S-20" },
@@ -293,8 +293,8 @@
             "izvodjenja": 2
         },
         "syntaxErrorList": [
-            { "line": 32, "description": "1S-12" },
-            { "line": 71, "description": "1S-05" }
+            { "line": 32, "description": "S1-12" },
+            { "line": 71, "description": "S1-05" }
         ],
         "semanticErrorList": [
             { "line": 12, "description": "2S-20" },
@@ -351,11 +351,11 @@
             "izvodjenja": 2
         },
         "syntaxErrorList": [
-            { "line": 46, "description": "1S-06" },
-            { "line": 49, "description": "1S-10" },
-            { "line": 49, "description": "1S-08" },
-            { "line": 56, "description": "1S-04" },
-            { "line": 59, "description": "1S-06" }
+            { "line": 46, "description": "S1-06" },
+            { "line": 49, "description": "S1-10" },
+            { "line": 49, "description": "S1-08" },
+            { "line": 56, "description": "S1-04" },
+            { "line": 59, "description": "S1-06" }
         ],
         "semanticErrorList": [
             { "line": 10, "description": "2S-13" },

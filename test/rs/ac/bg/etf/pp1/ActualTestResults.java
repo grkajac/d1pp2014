@@ -134,6 +134,7 @@ public class ActualTestResults {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static void startTest(File testFile) {
 
 		Reader br = null;
