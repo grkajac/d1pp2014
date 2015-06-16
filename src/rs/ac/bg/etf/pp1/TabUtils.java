@@ -47,8 +47,7 @@ public class TabUtils {
 
 	public static boolean inWhile = false;
 
-	public static String currentTypeNameUses;
-	public static boolean hasAbstractMethod = false;
+//	public static boolean hasAbstractMethod = false;
 
 	public static void resetAll() {
 
@@ -70,8 +69,7 @@ public class TabUtils {
 
 		inWhile = false;
 
-		currentTypeNameUses = null;
-		hasAbstractMethod = false;
+//		hasAbstractMethod = false;
 
 	}
 
