@@ -1,14 +1,13 @@
 package rs.ac.bg.etf.pp1;
 
 /**
- * Globalni enum za opis svih gresaka, sintaksnih i semanickih. Cilj je da imamo opise gresaka na jednom mestu.
+ * Globalni enum za opis svih sintaksnih gresaka.
  * 
  * @author Aleksandar Grkajac
  *
  */
-public enum SintaxSemanticsErrors {
-	
-	// Sintaksne greske
+public enum SintaxErrorDesc {
+
 	S1_00("Sintaksna greska [S1-00] na liniji replaceString : prilikom definicije glob. konstante, izvrsen oporavak do ; "),
 	S1_01("Sintaksna greska [S1-01] na liniji replaceString : prilikom definicije glob. konstante, izvrsen oporavak do , "),
 	S1_02("Sintaksna greska [S1-02] na liniji replaceString : prilikom definicije glob. prom., izvrsen oporavak do ;"),
@@ -24,29 +23,21 @@ public enum SintaxSemanticsErrors {
 	S1_12("Sintaksna greska [S1-12] na liniji replaceString : prilikom dodele vrednosti, izvrsen oporavak do ;"),
 	S1_13("Sintaksna greska [S1-13] na liniji replaceString : prilikom poziva funkcije, izvrsen oporavak do ;"),
 	S1_14("Sintaksna greska [S1-14] na liniji replaceString : u listi parametara pri pozivu f-je, izvrsen oporavak do )"),
-	S1_15("Sintaksna greska [S1-15] na liniji replaceString : izraza za index. niza, izvrsen oporavak do ]"),
-	S2_00("");
+	S1_15("Sintaksna greska [S1-15] na liniji replaceString : izraza za index. niza, izvrsen oporavak do ]");
 
-	
-	
 	private final String errorCode;
 
-	/**
-	 * @param text
-	 */
-	private SintaxSemanticsErrors(final String errorCode) {
-
+	private SintaxErrorDesc(final String errorCode) {
 		this.errorCode = errorCode;
 	}
 
 	@Override
 	public String toString() {
-
 		return errorCode;
 	}
 
-	public String printError(int line) {
-
+	public String print(int line) {
 		return errorCode.replaceFirst("replaceString", String.valueOf(line));
 	}
+
 }

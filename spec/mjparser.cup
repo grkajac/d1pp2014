@@ -78,12 +78,12 @@ parser code {:
      	Obj typeNode = Tab.find(typeName);
 
         if (typeNode.equals(Tab.noObj)) {
-            report_error("Semanticka greska - [2S-01] Nije pronadjen tip '" + typeName + "' u tabeli simbola", null);
+            report_error(SemanticErrorDesc.S2_01.print(typeName), null);
             return Tab.noType;
         }
         
         if (Obj.Type != typeNode.getKind()) {
-            report_error("Semanticka greska [2S-02] na liniji " + typeNameleft + " : Ime " + typeName + " ne predstavlja tip ", null);
+            report_error(SemanticErrorDesc.S2_02.print(typeNameleft, typeName), null);
             return Tab.noType;
         }
      
@@ -96,7 +96,7 @@ parser code {:
 
 		// Vec definisana konstanta
         if (!Tab.noObj.equals(konstanta)) {
-         	report_error("Semanticka greska [2S-07] na liniji " + idleft + " : [R76] Ime konstante '" + konstanta.getName() + "' je vec definisano", null);
+         	report_error(SemanticErrorDesc.S2_07.print(idleft, konstanta.getName()), null);
        		return konstanta;
         }
 
@@ -104,7 +104,7 @@ parser code {:
 		if(ConstNode.NUMBER.equals(node)) {
 			
 			if(!Tab.intType.equals(type)) {
-               report_error("Semanticka greska [2S-03] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije int", null);
+               report_error(SemanticErrorDesc.S2_03.print(idleft), null);
                return Tab.noObj;
             }
              
@@ -117,7 +117,7 @@ parser code {:
 		if(ConstNode.CHAR.equals(node)) {
 			
 			if(!Tab.charType.equals(type)) {
-               report_error("Semanticka greska [2S-04] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije char", null);
+               report_error(SemanticErrorDesc.S2_04.print(idleft), null);
 			   return Tab.noObj;
             } 
            
@@ -130,7 +130,7 @@ parser code {:
 		if(ConstNode.BOOL.equals(node)) {
 		
            if(!TabUtils.boolType.equals(type)) {
-              report_error("Semanticka greska [2S-05] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije bool", null);
+              report_error(SemanticErrorDesc.S2_05.print(idleft), null);
 			  return Tab.noObj;
            }
            
@@ -143,7 +143,7 @@ parser code {:
 		if(ConstNode.STRING.equals(node)) {
 		
 		   if(!TabUtils.stringType.equals(type)) {
-              report_error("Semanticka greska [2S-06] na liniji " + idleft + " : Tipovi nisu isti - Tip konstante nije string", null);
+              report_error(SemanticErrorDesc.S2_06.print(idleft), null);
               return Tab.noObj;
            }
            
@@ -160,7 +160,7 @@ parser code {:
 
 		// Provera tipa
         if(Tab.noType.equals(type)) {
-           report_error("Semanticka greska [2S-08] na liniji " + idleft + " : Tip promenljive nije definisan", null);
+           report_error(SemanticErrorDesc.S2_08.print(idleft), null);
            return;
         }
 
@@ -168,7 +168,7 @@ parser code {:
 
 		// Provera da li je promenljiva vec definisana
         if(promenljiva != null && !Tab.noObj.equals(promenljiva)) {
-            report_error("Semanticka greska [2S-09] na liniji " + idleft + " - Ime promeljive '" + promenljiva.getName() + "' je vec definisano", null);
+            report_error(SemanticErrorDesc.S2_09.print(idleft, promenljiva.getName()), null);
         	return;
         }
 
@@ -278,13 +278,13 @@ parser code {:
         
         if(Tab.noObj.equals(superClassObj)) {
 
-            report_error("Semanticka greska [2S-11] na liniji " + superClassleft + " - nadklasa nije definisana", null);
+            report_error(SemanticErrorDesc.S2_11.print(superClassleft), null);
             return Tab.noObj; 
         } 
         
         if(superClassObj.getKind() != Obj.Type && !Tab.nullType.equals(superClassObj.getType())){
 
-            report_error("Semanticka greska [2S-12] na liniji " + superClassleft + " - Nadklasa nije tip i nije tipa klase", null);
+            report_error(SemanticErrorDesc.S2_12.print(superClassleft), null);
             return Tab.noObj;
         } 
         
@@ -296,7 +296,7 @@ parser code {:
         Obj baseClassObj = Tab.find(baseClass);
         
          if(!Tab.noObj.equals(baseClassObj)) {
-            report_error("Semanticka greska [2S-10] na liniji " + baseClassleft + " : [R84] Ime klase je vec definisano", null);
+            report_error(SemanticErrorDesc.S2_10.print(baseClassleft), null);
             return Tab.noObj;
          }
         
@@ -673,13 +673,13 @@ parser code {:
 
         if(!isAssignableType(d)) {
 
-           report_error("Semanticka greska [2S-19] na liniji " + dleft + " : '" + d.getName() + "' sa leve strane izraza dodele vrednosti mora biti promenljiva, elem niza ili polje klase.", null);
+           report_error(SemanticErrorDesc.S2_19.print(dleft, d.getName()), null);
            isOk = false;
         }
 
         if(!TabUtils.assignableTo(d.getType(), s)){
 
-            report_error("Semanticka greska [2S-20] na liniji " + dleft + " : promenljive sa leve i desne strane izraza dodele nisu kompatibilni.", null);
+            report_error(SemanticErrorDesc.S2_20.print(dleft), null);
             isOk = false;
         }
 
@@ -722,12 +722,12 @@ parser code {:
 			// TODO
             if(Tab.currentScope().getnVars() > 0) {
 
-                // report_error("Semanticka greska [2S-14] na liniji " + mleft + " : main funkcija ne sme imati lokalne i formalne argumente.", null);
+                // report_error(SemanticErrorDesc.S2_12.print(mleft), null);
             }
 
             if(!TabUtils.currentMethodObj.getType().equals(Tab.noType)) {
 
-               report_error("Semanticka greska [2S-15] na liniji " + mleft + " : main funkcija mora biti tipa void.", null);
+               report_error(SemanticErrorDesc.S2_15.print(mleft), null);
             }
         }
     }
@@ -754,7 +754,7 @@ parser code {:
         boolean overridingMethod = TabUtils.checkIfMethodNameExistsInSuperClass(methName);
 
         if(findedMeth != null && !overridingMethod) {
-            report_error("Semanticka greska [2S-13] na liniji " + methNameleft + " : metoda je vec deklarisana.", null);
+            report_error(SemanticErrorDesc.S2_13.print(methNameleft), null);
             result = true;
         }
 
@@ -764,11 +764,11 @@ parser code {:
     public void checkReturnExp(String methName){
 
         if(!TabUtils.returnFound && !TabUtils.isVoid) {
-            report_error("Semanticka greska [2S-16] - nije nadjen return izraz za metodu '" + methName + "'.", null);
+            report_error(SemanticErrorDesc.S2_16.print(methName), null);
         }
 
         if(TabUtils.returnFound && TabUtils.isVoid) {
-            report_error("Semanticka greska [2S-17] - nadjen return izraz za metodu '" + methName + "' koja je void.", null);
+            report_error(SemanticErrorDesc.S2_17.print(methName), null);
         }
     }
 
@@ -869,7 +869,7 @@ non terminal FuncCalls;
 Program ::= PROG ProgBegin:p GlobalDeclaration LBRACE MethodDecl RBRACE
             {:
                 if(!TabUtils.hasMainFunc) {
-                   parser.report_error("Semanticka greska - [2S-00] Nije pronadjena main funkcija", null);
+                   parser.report_error(SemanticErrorDesc.S2_00.print(), null);
                 }
 
                 Code.dataSize = Tab.currentScope().getnVars();
@@ -883,7 +883,7 @@ Program ::= PROG ProgBegin:p GlobalDeclaration LBRACE MethodDecl RBRACE
                 Code.dataSize = Tab.currentScope().getnVars();
 
                 Tab.chainLocalSymbols(p);
-                parser.report_error("Semanticka greska - [2S-00] Nije pronadjena main funkcija", null);
+                parser.report_error(SemanticErrorDesc.S2_00.print(), null);
                 Tab.closeScope();
             :};
 
@@ -924,7 +924,7 @@ ConstDecl ::= ConstDeclSemi SEMI
               |
               error SEMI:e
               {:
-                 parser.report_error(SintaxSemanticsErrors.S1_00.printError(eleft), null);
+                 parser.report_error(SintaxErrorDesc.S1_00.print(eleft), null);
               :};
 
 ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
@@ -933,7 +933,7 @@ ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
                      |
                   error COMMA:l
                    {:
-                      parser.report_error(SintaxSemanticsErrors.S1_01.printError(lleft), null);
+                      parser.report_error(SintaxErrorDesc.S1_01.print(lleft), null);
                    :};
 
 ConstDeclPart ::= IDENT:id EQUAL NUMBER:num
@@ -992,14 +992,14 @@ VarPart_Semi_Recovery ::= VarPart SEMI
                           |
                           error SEMI:l
                           {:
-                            parser.report_error(SintaxSemanticsErrors.S1_02.printError(lleft), null);
+                            parser.report_error(SintaxErrorDesc.S1_02.print(lleft), null);
                           :};
 
 VarPart_Comma_Recovery ::= VarPart COMMA
                            |
                            error COMMA:cl
                            {:
-                               parser.report_error(SintaxSemanticsErrors.S1_03.printError(clleft), null);
+                               parser.report_error(SintaxErrorDesc.S1_03.print(clleft), null);
                            :};
 
 VarPart ::= IDENT:id
@@ -1066,7 +1066,7 @@ ClassExtendsLB_Recovery ::= IDENT:baseClass EXTENDS IDENT:superClass LBRACE
                             |
                             error LBRACE:l
                             {:
-                                parser.report_error(SintaxSemanticsErrors.S1_04.printError(lleft), null);
+                                parser.report_error(SintaxErrorDesc.S1_04.print(lleft), null);
 
                                 RESULT = Tab.noObj;
                                 Tab.openScope();
@@ -1088,7 +1088,7 @@ ClassVarList_RBRACE_Recovery ::= ClassVarList ClassMethodDecl RBRACE
                                  |
                                  error RBRACE:l
                                  {:
-                                    parser.report_error(SintaxSemanticsErrors.S1_05.printError(lleft), null);
+                                    parser.report_error(SintaxErrorDesc.S1_05.print(lleft), null);
                                  :};
 
 ClassVarList ::= ClassVarList ClassVarPart
@@ -1099,7 +1099,7 @@ ClassVarPart ::= C_VarDecl SEMI
                  |
                  error SEMI:l
                  {:
-                     parser.report_error(SintaxSemanticsErrors.S1_06.printError(lleft), null);
+                     parser.report_error(SintaxErrorDesc.S1_06.print(lleft), null);
                  :};
 
 C_VarDecl ::=  Type:typeName
@@ -1183,7 +1183,7 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                    ABSTRACT MethodName:methName LPAREN FormPars_Recovery SEMI
                    {:
                      if(!scope.equals(ScopeNode.ABSTRACT_CLASS)){
-                         parser.report_error("Semanticka greska [2S-18] na liniji " + methNameleft + " - apstraktna metoda deklarisana van apstraktne klase na liniji.", null);
+                         parser.report_error(SemanticErrorDesc.S2_18.print(methNameleft), null);
                      }
 
                     // TabUtils.hasAbstractMethod = true;
@@ -1229,14 +1229,14 @@ LocalVarDecl_Semi_Recovery ::= Type:typeName
                                |
                                error SEMI:l
                                {:
-                                    parser.report_error(SintaxSemanticsErrors.S1_07.printError(lleft), null);
+                                    parser.report_error(SintaxErrorDesc.S1_07.print(lleft), null);
                                :};
 
 LocalVarDecl_Lbrace_Recovery ::= LocalVarDecl_Semi_Recovery LBRACE
                                  |
                                  error LBRACE:l
                                  {:
-                                     parser.report_error(SintaxSemanticsErrors.S1_08.printError(lleft), null);
+                                     parser.report_error(SintaxErrorDesc.S1_08.print(lleft), null);
                                  :};
 
 M_VarList ::= M_VarList COMMA VarPart
@@ -1263,7 +1263,7 @@ FormalParamDecl_Comma_Recovery ::= FormalParamType VarPart COMMA
                                    |
                                    error COMMA:l
                                    {:
-                                       parser.report_error(SintaxSemanticsErrors.S1_09.printError(lleft), null);
+                                       parser.report_error(SintaxErrorDesc.S1_09.print(lleft), null);
                                    :};
 
 FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
@@ -1273,7 +1273,7 @@ FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
                                     |
                                     error RPAREN:l
                                     {:
-                                        parser.report_error(SintaxSemanticsErrors.S1_10.printError(lleft), null);
+                                        parser.report_error(SintaxErrorDesc.S1_10.print(lleft), null);
                                     :};
 
 FormalParamType ::= Type:typeName
@@ -1379,7 +1379,7 @@ Brace_condition ::= LPAREN Condition:c RPAREN
                     |
                     error RPAREN:l
                     {:
-                        parser.report_error(SintaxSemanticsErrors.S1_11.printError(lleft), null);
+                        parser.report_error(SintaxErrorDesc.S1_11.print(lleft), null);
                         TabUtils.conditionError = true;
                         RESULT = false;
                     :};
@@ -1391,7 +1391,7 @@ Dodela ::= 	Expr:e SEMI
             |
             error SEMI:l
             {:
-                parser.report_error(SintaxSemanticsErrors.S1_12.printError(lleft), null);
+                parser.report_error(SintaxErrorDesc.S1_12.print(lleft), null);
                 RESULT = Tab.noType;
             :};
 
@@ -1422,7 +1422,7 @@ FuncCalls ::= READ LPAREN Designator:d RPAREN SEMI
               |
               error SEMI:l
               {:
-                  parser.report_error(SintaxSemanticsErrors.S1_13.printError(lleft), null);
+                  parser.report_error(SintaxErrorDesc.S1_13.print(lleft), null);
               :};
 
 ProgramFunc ::= Designator:d LPAREN
@@ -1590,7 +1590,7 @@ ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
                                |
                                error RPAREN:l
                                {:
-                                  parser.report_error(SintaxSemanticsErrors.S1_14.printError(lleft), null);
+                                  parser.report_error(SintaxErrorDesc.S1_14.print(lleft), null);
                                :};
 
 ActualPars ::= ActualParamList
@@ -1665,7 +1665,7 @@ ExprInSquaresRS_Recovery ::= LSQUARE Expr:e RSQUARE
                              |
                              error RSQUARE:l
                              {:
-                                parser.report_error(SintaxSemanticsErrors.S1_15.printError(lleft), null);
+                                parser.report_error(SintaxErrorDesc.S1_15.print(lleft), null);
                              :};
                     
 Addop ::= PLUS {: RESULT = Code.add; :}
