@@ -335,7 +335,7 @@ parser code {:
     public Obj getDesignator(String name, int nameleft, ScopeNode scope) {
 
        if("this".equals(name) && ScopeNode.GLOBAL.equals(scope)) {
-          report_error("Semanticka greska [2S-41] na liniji " + nameleft + " : 'this' ne sme se koristiti u globalnom opsegu! ", null);
+          report_error(SemanticErrorDesc.S2_41.print(nameleft), null);
           return Tab.noObj;
        }
        
@@ -346,7 +346,7 @@ parser code {:
        Obj obj = Tab.find(name);
 		
 	   if(Tab.noObj.equals(obj)) {
-		   report_error("Semanticka greska [2S-42] na liniji " + nameleft + " : '" + name + "' nije deklarisano! ", null);
+		   report_error(SemanticErrorDesc.S2_42.print(nameleft, name), null);
 		   return Tab.noObj;
 	   }
        return obj;
@@ -355,14 +355,14 @@ parser code {:
     public Obj getClassDesignator(String name, int nameleft) {
 
         if(TabUtils.currentDesignatorObj.getType().getKind() != Struct.Class) {
-             report_error("Semanticka greska [2S-45] na liniji " + nameleft + " :  '" + TabUtils.currentDesignatorObj.getName() + "' mora biti unutrasnja klasa! ", null);
+             report_error(SemanticErrorDesc.S2_45.print(nameleft, TabUtils.currentDesignatorObj.getName()), null);
              return Tab.noObj;
         }
 
 		Obj result = TabUtils.findMemberInClass(TabUtils.currentDesignatorObj, name);
 
         if(Tab.noObj.equals(result)) {
-           report_error("Semanticka greska [2S-46] na liniji " + nameleft + " : '" + name + "' nije deklarisano unutar klase! ", null);
+           report_error(SemanticErrorDesc.S2_46.print(nameleft, name), null);
            return Tab.noObj;
         }
        
@@ -375,7 +375,7 @@ parser code {:
 	   /*
        if(TabUtils.isAbstractClass()){
 
-          report_error("Semanticka greska [2S-37] na liniji " + exprleft + " :[R104] kreiranje niza tipom apstraktne klase!", null);
+          report_error(SemanticErrorDesc.S2_37.print(exprleft), null);
           return Tab.noType;
        }
 	   */
@@ -387,7 +387,7 @@ parser code {:
           return result;
        }
        
-       report_error("Semanticka greska [2S-38] na liniji " + exprleft + " : broj elemenata niza mora biti tipa int! ", null);
+       report_error(SemanticErrorDesc.S2_38.print(exprleft), null);
        return Tab.noType;
     }
 
@@ -396,7 +396,7 @@ parser code {:
 		/*
         if(TabUtils.isAbstractClass()){
 
-          report_error("Semanticka greska [2S-39] na liniji " + typeleft + " :[R104] kreiranje objekta tipom apstraktne klase!", null);
+          report_error(SemanticErrorDesc.S2_39.print(typeleft), null);
           return Tab.noType;
         }
         */
@@ -405,7 +405,7 @@ parser code {:
            return type;
         }
 
-        report_error("Semanticka greska [2S-40] na liniji " + typeleft + " : unut. klasa mora biti koriscenja za new iskaz! ", null);
+        report_error(SemanticErrorDesc.S2_40.print(typeleft), null);
         return Tab.noType;
     }
 
@@ -418,7 +418,7 @@ parser code {:
     public Struct addopTerms(Struct termLeft, Struct termRight, int line, int op){
 
         if(!termLeft.compatibleWith(termRight)){
-             report_error("Semanticka greska [2S-33] na liniji " + line + " : addop izrazi nisu kompatibilni! ", null);
+             report_error(SemanticErrorDesc.S2_33.print(line), null);
              return Tab.noType;
         }
 
@@ -432,7 +432,7 @@ parser code {:
                return TabUtils.stringType;
            }
 
-           report_error("Semanticka greska [2S-34] na liniji " + line + " : izrazi pri operaciji + moraju biti tipa int ili string! ", null);
+           report_error(SemanticErrorDesc.S2_34.print(line), null);
            return Tab.noType;
         } 
         
@@ -442,7 +442,7 @@ parser code {:
               return Tab.intType;
            } 
 			
-           report_error("Semanticka greska [2S-35] na liniji " + line + " : izrazi pri operaciji -, - moraju biti tipa int! ", null);
+           report_error(SemanticErrorDesc.S2_35.print(line), null);
            return Tab.noType;
         }
         
@@ -453,7 +453,7 @@ parser code {:
 
         if(factorLeft.getKind() != Struct.Int || factorRight.getKind() != Struct.Int){
            
-            report_error("Semanticka greska [2S-36] na liniji " + line + " : izrazi pri operacijama *, / i % moraju biti tipa int! ", null);
+            report_error(SemanticErrorDesc.S2_36.print(line), null);
         	return Tab.noType;
         }
         
@@ -466,7 +466,7 @@ parser code {:
            return Tab.intType;
         }
         
-        report_error("Semanticka greska [2S-32] na liniji " + termlistleft + " : iskaz mora biti tipa int", null);
+        report_error(SemanticErrorDesc.S2_32.print(termlistleft), null);
         return Tab.noType;
     }
 
@@ -493,7 +493,7 @@ parser code {:
 			  
               if(!TabUtils.assignableTo(actualParams.next(), formalParams.next().getType())) {
 
-                  report_error("Semanticka greska [2S-47] na liniji " + funcleft + " : stvarni parametar na poziciji " + counter + " nije kompatibilan pri dodeli sa formalnim parametrom metode.", null);
+                  report_error(SemanticErrorDesc.S2_47.print(funcleft, counter), null);
                   isOK = false;
               }
               counter++;
@@ -508,7 +508,7 @@ parser code {:
 
         if(func.getKind() != Obj.Meth){
 
-             report_error("Semanticka greska [2S-25] na liniji " + funcleft + " : '" + func.getName() + "' mora oznacavati metodu un.klase ili glob. metodu.", null);
+             report_error(SemanticErrorDesc.S2_25.print(funcleft, func.getName()), null);
              return result;
         }
 
@@ -525,7 +525,7 @@ parser code {:
 		// TODO
         if(func.getLevel() != actParamNum){
 
-          report_error("Semanticka greska [2S-26] na liniji " + funcleft + " : broj stvarnih i formalnih parametara se ne slaze", null);
+          report_error(SemanticErrorDesc.S2_26.print(funcleft), null);
           //return result;
         }
 
@@ -557,13 +557,13 @@ parser code {:
 
         if( !exp1.compatibleWith(exp2)) {
 
-           report_error("Semanticka greska [2S-30] na liniji " + exp1left + " : pri uslovnim proverama tipovi nisu kompatibilni", null);
+           report_error(SemanticErrorDesc.S2_30.print(exp1left), null);
            return false;
         }
 
         if(checkRefTypeOperator(exp1, exp2, op)) {
 
-           report_error("Semanticka greska [2S-31] na liniji " + exp1left + " : pri uslovnim proverama tipovi klase ili niza mogu koristiti samo != i == operatore.", null);
+           report_error(SemanticErrorDesc.S2_31.print(exp1left), null);
            return false;
         }
         
@@ -574,7 +574,7 @@ parser code {:
 
         if(!TabUtils.boolType.equals(exp)) {
 
-            report_error("Semanticka greska [2S-48] na liniji " + expleft + " : pri uslovnim proverama, izraz nije tipa bool!", null);
+            report_error(SemanticErrorDesc.S2_48.print(expleft), null);
             return false;
         }
 
@@ -595,7 +595,7 @@ parser code {:
 	public void checkPrint(Struct e, int eleft, Integer num) {
 
         if(!checkBasicType(e)) {
-           report_error("Semanticka greska [2S-29] na liniji " + eleft + " : izraz u print f-ji mora biti int,char,bool ili string.", null);
+           report_error(SemanticErrorDesc.S2_29.print(eleft), null);
         }
 
         if(TabUtils.hasMainFunc) {
@@ -632,11 +632,11 @@ parser code {:
 
         if(!isAssignableType(d)) {
 
-           report_error("Semanticka greska [2S-27] na liniji " + dleft + " : '" + d.getName() + "' u read izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+           report_error(SemanticErrorDesc.S2_27.print(dleft, d.getName()), null);
         }
 
         if(!checkBasicType(d.getType())){
-            report_error("Semanticka greska [2S-28] na liniji " + dleft + " : izraz u read f-ji mora biti int,char,bool ili string.", null);
+            report_error(SemanticErrorDesc.S2_28.print(dleft), null);
         }
 
         if(TabUtils.hasMainFunc) {
@@ -659,7 +659,7 @@ parser code {:
     	if(Struct.Array == e.getKind()) {
     		Code.put(Code.arraylength); 
     	} else {
-    		report_error("Semanticka greska [2S-49] na liniji " + eleft + " : stvarni parametar predefinisane len f-je mora biti niz!", null);
+    		report_error(SemanticErrorDesc.S2_49.print(eleft), null);
     	}
     	
     	if(TabUtils.hasMainFunc) {
@@ -692,13 +692,13 @@ parser code {:
 
         if(!isAssignableType(d)) {
 
-           report_error("Semanticka greska [2S-21] na liniji " + dleft + " : '" + d.getName() + "' u increment/decrement izrazu mora biti promenljiva, elem niza ili polje klase.", null);
+           report_error(SemanticErrorDesc.S2_21.print(dleft, d.getName()), null);
            return false;
         }
 
         if(!Tab.intType.equals(d.getType())){
 
-            report_error("Semanticka greska [2S-22] na liniji " + dleft + " : increment/decrement izraz mora biti tipa int.", null);
+            report_error(SemanticErrorDesc.S2_22.print(dleft), null);
             return false;
         } 
         
@@ -735,7 +735,7 @@ parser code {:
     public void checkReturnStat(Struct exp, int expleft) {
 
         if(!TabUtils.currentMethodObj.getType().equals(exp)) {
-            report_error("Semanticka greska [2S-23] na liniji " + expleft + " : povratni tip metode se ne slaze sa tipom return izraza.", null);
+            report_error(SemanticErrorDesc.S2_23.print(expleft), null);
         }
     }
 
@@ -1362,7 +1362,7 @@ Matched ::= Designator:dest EQUAL Dodela:d
             BREAK:b SEMI
             {:
                 if(!TabUtils.inWhile) {
-                    parser.report_error("Semanticka greska [2S-24] na liniji " + bleft + " : break iskaz se poziva van while petlje", null);
+                    parser.report_error(SemanticErrorDesc.S2_24.print(bleft), null);
                 }
             :}
             |
@@ -1643,7 +1643,7 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
                     {:
                         if(TabUtils.currentDesignatorObj.getType().getKind() != Struct.Array) {
 
-                            parser.report_error("Semanticka greska [2S-44] na liniji " + exSqrleft + " : nadjeni element mora biti tipa niz! ", null);
+                            parser.report_error(SemanticErrorDesc.S2_44.print(exSqrleft), null);
                             RESULT = Tab.noObj;
                         } else {
 
@@ -1659,7 +1659,7 @@ DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
 ExprInSquaresRS_Recovery ::= LSQUARE Expr:e RSQUARE
                              {:
                                   if(!Tab.intType.equals(e)) {
-                                    parser.report_error("Semanticka greska [2S-43] na liniji " + eleft + " : index niza mora biti tipa int! ", null);
+                                    parser.report_error(SemanticErrorDesc.S2_43.print(eleft), null);
                                   }
                              :}
                              |
