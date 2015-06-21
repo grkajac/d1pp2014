@@ -93,7 +93,7 @@ public class TabUtils {
 
 		DumpSymbolTableVisitor visitor = new DumpSymbolTableVisitor();
 		visitor.visitObjNode(obj);
-
+		
 		return visitor.getOutput();
 	}
 
@@ -147,6 +147,27 @@ public class TabUtils {
 		Obj findedObj = Tab.currentScope.findSymbol(fieldName);
 
 		return (findedObj == null) ? Tab.noObj : findedObj;
+	}
+
+	/**
+	 * Trazi lokalnu promenljivu sa zadatim imenom u metodi.
+	 * 
+	 * @param {@link Obj} method - metoda u kojoj se trazi promenljiva (lokalna ili parametar)
+	 * @param varName - ime promenljive
+	 * @return vraca trazenu promenljivu, u suprotnom vraca Tab.noObj.
+	 */
+	public static Obj findVarInMethod(Obj method, String varName) {
+
+		if (method == null || Tab.noObj.equals(method) || varName == null || varName == "") {
+			return Tab.noObj;
+		}
+
+		for (Obj obj : method.getLocalSymbols()) {
+			if (obj.getName().equals(varName)) {
+				return obj;
+			}
+		}
+		return Tab.noObj;
 	}
 
 	/**

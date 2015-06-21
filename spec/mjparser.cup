@@ -77,7 +77,7 @@ parser code {:
      
      	Obj typeNode = Tab.find(typeName);
 
-        if (typeNode.equals(Tab.noObj)) {
+        if (Tab.noObj.equals(typeNode)) {
             report_error(SemanticErrorDesc.S2_01.print(typeName), null);
             return Tab.noType;
         }
@@ -202,7 +202,6 @@ parser code {:
 			
 			Obj prom = Tab.insert(Obj.Var, id, type);
             setFormalParam(prom);
-            TabUtils.formalParamCount++;
 		}
 
 		// GLOBAL_ARRAY_VAR
@@ -237,12 +236,16 @@ parser code {:
 			
 			Obj prom = Tab.insert(Obj.Var, id, new Struct(Struct.Array, type));
             setFormalParam(prom);
-            TabUtils.formalParamCount++;
 		}
     }
 
     public void setFormalParam(Obj formParam) {
            formParam.setFpPos(TabUtils.formalParamPosition++);
+           
+           // broje se svi koji nisu "this", this je prvi parametar na poziciji 0
+           if(!formParam.getName().equals("this")) {
+           		TabUtils.formalParamCount++;
+           }
     }
 
 	// Dodaju se atributi nadklase.
@@ -324,7 +327,6 @@ parser code {:
         Tab.chainLocalSymbols(methodObj);
     }
 
-	// TODO
     public void insertThisParam(ScopeNode scope, VarNode var) {
 
         if(ScopeNode.CLASS.equals(scope) || ScopeNode.ABSTRACT_CLASS.equals(scope)) {
@@ -337,10 +339,6 @@ parser code {:
        if("this".equals(name) && ScopeNode.GLOBAL.equals(scope)) {
           report_error(SemanticErrorDesc.S2_41.print(nameleft), null);
           return Tab.noObj;
-       }
-       
-       if("this".equals(name) && (ScopeNode.CLASS.equals(scope) || ScopeNode.ABSTRACT_CLASS.equals(scope))) {
-       		return TabUtils.currentClassObj;
        }
 
        Obj obj = Tab.find(name);
@@ -470,7 +468,6 @@ parser code {:
         return Tab.noType;
     }
 
-    // TODO
    public boolean checkActParamsType(Obj func, int funcleft) {
 
       boolean isOK = true;
@@ -481,11 +478,8 @@ parser code {:
           Iterator<Obj> formalParams = func.getLocalSymbols().iterator();
           int counter = 1;
 
-          // preskacemo this 0 parametar
-          Collection<Obj> funcLocals = func.getLocalSymbols();
-          Obj thisObj = (funcLocals.isEmpty()) ? Tab.noObj : ((Obj)funcLocals.toArray()[0]);
-
-          if("this".equals(thisObj.getName())) {
+          // preskacemo this parametar na 0 poziciji
+          if(!Tab.noObj.equals(TabUtils.findVarInMethod(func, "this"))) {
               formalParams.next();
           }
 
@@ -512,38 +506,22 @@ parser code {:
              return result;
         }
 
-        // treba nam ova provera zbog this argumenta kod klasa
-        int actParamNum = TabUtils.actualParams.size();
-
-        Collection<Obj> funcLocals = func.getLocalSymbols();
-        Obj thisObj = (funcLocals.isEmpty()) ? Tab.noObj : ((Obj)funcLocals.toArray()[0]);
-
-        if("this".equals(thisObj.getName())) {
-             actParamNum++;
-        }
-
-		// TODO
-        if(func.getLevel() != actParamNum){
-
+        if(func.getLevel() != TabUtils.actualParams.size()){
           report_error(SemanticErrorDesc.S2_26.print(funcleft), null);
-          //return result;
         }
 
-        if(!checkActParamsType(func, funcleft)){
-            //return result;
-        }
+        checkActParamsType(func, funcleft);
 
         // broji se funkcija
         if(TabUtils.hasMainFunc) {
            functionCallsInMainCount++;
         }
 
-        // ispis poruke koriscenja globalne funkcije / metode unutrasnje klase
-        
-        if(func.getLevel() == 0) {
-        
+        if(ScopeNode.GLOBAL.equals(scope)) {
             report_info("Poziv globalne funkcije na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
-        } else {
+        } 
+        
+		if(ScopeNode.CLASS.equals(scope)) {
             report_info("Poziv metode un.klase na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
         }
         return func.getType();
@@ -1159,6 +1137,7 @@ MethodName ::= MethodRetType:retType IDENT:methName
                     Tab.openScope();
 
                     var = VarNode.METHOD_FORMAL_VAR;
+                    
                     parser.insertThisParam(scope, var);
                 :};
 
