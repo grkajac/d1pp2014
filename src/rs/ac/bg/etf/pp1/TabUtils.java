@@ -26,7 +26,6 @@ public class TabUtils {
 
 	public static Obj currentMethodObj = Tab.noObj;
 	public static Obj currentClassObj = Tab.noObj;
-	public static Obj currentSuperClassObj = Tab.noObj;
 	public static Struct currentVarType = Tab.noType;
 
 	public static boolean returnFound = false;
@@ -74,9 +73,7 @@ public class TabUtils {
 	}
 
 	public static void resetClassFlags() {
-
 		currentClassObj = Tab.noObj;
-		currentSuperClassObj = Tab.noObj;
 	}
 
 	public static void resetMethodsFlags() {
@@ -194,31 +191,70 @@ public class TabUtils {
 		return Tab.noObj;
 	}
 
+	private static boolean parentClassExists() {
+
+		if (Tab.noObj.equals(currentClassObj)) {
+			return false;
+		}
+
+		if (currentClassObj.getType() == null) {
+			return false;
+		}
+
+		if (currentClassObj.getType().getElemType() == null) {
+			return false;
+		}
+
+		if (currentClassObj.getType().getElemType().getMembers() == null) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static Collection<Obj> getParentMembers() {
+
+		if (!parentClassExists()) {
+			return new ArrayList<Obj>();
+		}
+
+		return currentClassObj.getType().getElemType().getMembers();
+	}
+
 	/**
 	 * Proverava da li ime metode postoji u nadklasi.
 	 * 
 	 * @param methodName
 	 * @return true ako postoji, u suprotnom vraca false.
 	 */
-	public static boolean checkIfMethodNameExistsInSuperClass(String methodName) {
+	public static boolean checkIfMethodNameExistsInParentClass(String methodName) {
 
-		Obj findedMethodObj = findMemberInClass(currentSuperClassObj, methodName);
+		if (!parentClassExists()) {
+			return false;
+		}
 
-		return (Tab.noObj.equals(findedMethodObj)) ? false : true;
+		Collection<Obj> parentClassMembers = getParentMembers();
+
+		for (Obj member : parentClassMembers) {
+			if (Obj.Meth == member.getKind() && member.getName().equals(methodName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
 	 * Kopira metode nadklase u klasu koja se trenutno obradjuje.
 	 */
-	public static void copySuperClassMethods() {
+	public static void copyParentClassMethods() {
 
-		if (Tab.noObj.equals(currentSuperClassObj)) {
+		if (!parentClassExists()) {
 			return;
 		}
 
-		Collection<Obj> superClassMembers = currentSuperClassObj.getType().getMembers();
+		Collection<Obj> parentClassMembers = getParentMembers();
 
-		for (Obj member : superClassMembers) {
+		for (Obj member : parentClassMembers) {
 			if (Obj.Meth == member.getKind()) {
 				Tab.currentScope().addToLocals(member);
 			}

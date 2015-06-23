@@ -248,21 +248,43 @@ parser code {:
            }
     }
 
-	// Dodaju se atributi nadklase.
-	
-    public boolean copySuperClassAtributes(String superClass, Obj baseClass, int superClassleft) {
+    public Obj classProcessing(String className, int classNameleft) {
 
-        TabUtils.currentSuperClassObj = getSuperClassObj(superClass, superClassleft);
+        Obj classObj = Tab.find(className);
+        
+         if(!Tab.noObj.equals(classObj)) {
+            report_error(SemanticErrorDesc.S2_10.print(classNameleft), null);
+            return Tab.noObj;
+         }
+        
+        TabUtils.currentClassObj = Tab.insert(Obj.Type, className, new Struct(Struct.Class));
+
+        innerClassesCount++;
+        
+        return TabUtils.currentClassObj;
+    }
+
+	/*
+	 * Vezuju se klase dete roditelj i kopiraju se atributi klase roditelja u trenutni scope.
+	 
+	 * Pogledaj PP1_P9a.doc strana 2.
+	 */
+    public boolean linkingChildParentClasses(String parentClass, Obj childClassObj, int parentClassleft) {
+
+        Obj parentClassObj = getParentClassObj(parentClass, parentClassleft);
         
         // Super klasa nije nadjena
-        if(Tab.noObj.equals(TabUtils.currentSuperClassObj)) {
+        if(Tab.noObj.equals(parentClassObj)) {
 			return false;			
 		}
 		
-		// Za nadjenu superklasu, kopiraj sve nasledjene atribute u izvedenu klasu
-		Collection<Obj> superClassMembers = TabUtils.currentSuperClassObj.getType().getMembers();
+		// Povezujemo klase dete roditelj.
+		childClassObj.getType().setElementType(parentClassObj.getType());
 		
-		for(Obj member: superClassMembers) {
+		// Za nadjenu superklasu, kopiraj sve nasledjene atribute u izvedenu klasu
+		Collection<Obj> parentClassMembers = parentClassObj.getType().getMembers();
+		
+		for(Obj member: parentClassMembers) {
 			if(Obj.Fld == member.getKind()) {
 				Tab.currentScope().addToLocals(member);
 			}
@@ -271,43 +293,27 @@ parser code {:
 		return true;
     }
 
-    public Obj getSuperClassObj(String superClass, int superClassleft) {
+    public Obj getParentClassObj(String parentClass, int parentClassleft) {
         
-        if(superClass == null) {
+        if(parentClass == null) {
         	return Tab.noObj;
         }
 
-        Obj superClassObj = Tab.find(superClass);
+        Obj parentClassObj = Tab.find(parentClass);
         
-        if(Tab.noObj.equals(superClassObj)) {
+        if(Tab.noObj.equals(parentClassObj)) {
 
-            report_error(SemanticErrorDesc.S2_11.print(superClassleft), null);
+            report_error(SemanticErrorDesc.S2_11.print(parentClassleft), null);
             return Tab.noObj; 
         } 
         
-        if(superClassObj.getKind() != Obj.Type && !Tab.nullType.equals(superClassObj.getType())){
+        if(parentClassObj.getKind() != Obj.Type && !Tab.nullType.equals(parentClassObj.getType())){
 
-            report_error(SemanticErrorDesc.S2_12.print(superClassleft), null);
+            report_error(SemanticErrorDesc.S2_12.print(parentClassleft), null);
             return Tab.noObj;
         } 
         
-        return superClassObj;
-    }
-
-    public Obj classProcessing(String baseClass, int baseClassleft) {
-
-        Obj baseClassObj = Tab.find(baseClass);
-        
-         if(!Tab.noObj.equals(baseClassObj)) {
-            report_error(SemanticErrorDesc.S2_10.print(baseClassleft), null);
-            return Tab.noObj;
-         }
-        
-        TabUtils.currentClassObj = Tab.insert(Obj.Type, baseClass, new Struct(Struct.Class));
-
-        innerClassesCount++;
-        
-        return TabUtils.currentClassObj;
+        return parentClassObj;
     }
 
     public void countMethods(ScopeNode scope){
@@ -447,7 +453,7 @@ parser code {:
         return Tab.noType;
     }
 
-    public Struct mulopFactors(Struct factorLeft, Struct factorRight, int line){
+    public Struct mulopFactors(Struct factorLeft, Struct factorRight, int line) {
 
         if(factorLeft.getKind() != Struct.Int || factorRight.getKind() != Struct.Int){
            
@@ -495,15 +501,13 @@ parser code {:
       }
       return isOK;
    }
-	// TODO
-    public Struct checkFunc(Obj func, int funcleft, ScopeNode scope) {
 
-        Struct result = Tab.noType;
+    public Struct checkFunc(Obj func, int funcleft, ScopeNode scope) {
 
         if(func.getKind() != Obj.Meth){
 
              report_error(SemanticErrorDesc.S2_25.print(funcleft, func.getName()), null);
-             return result;
+             return Tab.noType;
         }
 
         if(func.getLevel() != TabUtils.actualParams.size()){
@@ -527,13 +531,14 @@ parser code {:
         return func.getType();
     }
 
+    // dozvoljeno samo za uslove ge, gt, le, lt
     public boolean checkRefTypeOperator(Struct exp1, Struct exp2, int op) {
         return (exp1.isRefType() && exp2.isRefType() && op != 0 && op != 1) ? true : false;
     }
 
     public boolean condFactCheck(Struct exp1, Struct exp2, int exp1left, int op) {
 
-        if( !exp1.compatibleWith(exp2)) {
+        if(!exp1.compatibleWith(exp2)) {
 
            report_error(SemanticErrorDesc.S2_30.print(exp1left), null);
            return false;
@@ -580,36 +585,28 @@ parser code {:
            functionCallsInMainCount++;
         }
 
-        switch(e.getKind()) {
-            case Struct.Int:
+		if(Struct.Int == e.getKind()) {
+			if(num != null) {
+               Code.loadConst(num);
+            } else {
+                Code.loadConst(5);
+            }
+            Code.put(Code.print);
+		}
 
-                if(num != null) {
-                   Code.loadConst(num);
-                } else {
-                    Code.loadConst(5);
-                }
-                Code.put(Code.print);
-                break;
-
-            case Struct.Char:
-
-               if(num != null) {
-                  Code.loadConst(num);
-               } else {
-                   Code.loadConst(1);
-               }
-               Code.put(Code.bprint);
-               break;
-
-            default:
-                break;
-        }
+		if(Struct.Char == e.getKind()) {
+			if(num != null) {
+              Code.loadConst(num);
+            } else {
+               Code.loadConst(1);
+            }
+            Code.put(Code.bprint);
+		}
     }
 
     public void checkRead(Obj d, int dleft) {
 
         if(!isAssignableType(d)) {
-
            report_error(SemanticErrorDesc.S2_27.print(dleft, d.getName()), null);
         }
 
@@ -621,14 +618,14 @@ parser code {:
             functionCallsInMainCount++;
         }
 
-        switch (d.getType().getKind()) {
+		if(Struct.Int == d.getType().getKind()) {
+			Code.put(Code.read);
+		}
 
-            case Struct.Int: Code.put(Code.read); break;
+		if(Struct.Char == d.getType().getKind()) {
+			Code.put(Code.bread);
+		}
 
-            case Struct.Char: Code.put(Code.bread); break;
-
-            default:  break;
-        }
         Code.store(d);
     }
     
@@ -647,26 +644,22 @@ parser code {:
 
     public boolean checkEqualExpr(Obj d, Struct s, int dleft) {
 
-        boolean isOk = true;
-
         if(!isAssignableType(d)) {
 
            report_error(SemanticErrorDesc.S2_19.print(dleft, d.getName()), null);
-           isOk = false;
+           return false;
         }
 
         if(!TabUtils.assignableTo(d.getType(), s)){
 
             report_error(SemanticErrorDesc.S2_20.print(dleft), null);
-            isOk = false;
+            return false;
         }
 
-        return isOk;
+        return true;
     }
 
     public boolean checkIncDecExpr(Obj d, int dleft, boolean isInc) {
-
-        boolean isOk = true;
 
         if(!isAssignableType(d)) {
 
@@ -697,12 +690,6 @@ parser code {:
 
         if(!Tab.noObj.equals(TabUtils.currentMethodObj) && "main".equals(TabUtils.currentMethodObj.getName())){
 
-			// TODO
-            if(Tab.currentScope().getnVars() > 0) {
-
-                // report_error(SemanticErrorDesc.S2_12.print(mleft), null);
-            }
-
             if(!TabUtils.currentMethodObj.getType().equals(Tab.noType)) {
 
                report_error(SemanticErrorDesc.S2_15.print(mleft), null);
@@ -729,7 +716,7 @@ parser code {:
 
         Obj findedMeth = Tab.currentScope.findSymbol(methName);
         
-        boolean overridingMethod = TabUtils.checkIfMethodNameExistsInSuperClass(methName);
+        boolean overridingMethod = TabUtils.checkIfMethodNameExistsInParentClass(methName);
 
         if(findedMeth != null && !overridingMethod) {
             report_error(SemanticErrorDesc.S2_13.print(methNameleft), null);
@@ -1022,22 +1009,22 @@ ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
                  scope = ScopeNode.GLOBAL;
               :};
 
-ClassExtendsLB_Recovery ::= IDENT:baseClass EXTENDS IDENT:superClass LBRACE
+ClassExtendsLB_Recovery ::= IDENT:childClass EXTENDS IDENT:parentClass LBRACE
                             {:
-                                RESULT = parser.classProcessing(baseClass, baseClassleft);
-
+                                RESULT = parser.classProcessing(childClass, childClassleft);
+                                
                                 Tab.openScope();
 
-                                boolean isCopyingSuccessful = parser.copySuperClassAtributes(superClass, RESULT, superClassleft);
+                                boolean isLinkingSuccessful = parser.linkingChildParentClasses(parentClass, RESULT, parentClassleft);
                                 
-                                if(isCopyingSuccessful) {
+                                if(isLinkingSuccessful) {
                                 	parser.extendingClassesCount++;
                                 }
                             :}
                             |
-                            IDENT:baseClass LBRACE
+                            IDENT:childClass LBRACE
                             {:
-                                RESULT = parser.classProcessing(baseClass, baseClassleft);
+                                RESULT = parser.classProcessing(childClass, childClassleft);
 
                                 Tab.openScope();
                             :}
@@ -1060,7 +1047,7 @@ ClassVarList_RBRACE_Recovery ::= ClassVarList ClassMethodDecl RBRACE
                                  |
                                  ClassVarList
                                  {:
-                                 	TabUtils.copySuperClassMethods();
+                                 	TabUtils.copyParentClassMethods();
                                  :}
                                  RBRACE
                                  |
@@ -1093,7 +1080,7 @@ C_VarList ::= C_VarList COMMA VarPart
 
 ClassMethodDecl ::= LBRACE:l 
 					{: 
-						TabUtils.copySuperClassMethods(); 
+						TabUtils.copyParentClassMethods(); 
 						
 						// Vezu se atributi klase za currentClassObj, da bi mogao da se koristi this u metodama.
 						Tab.chainLocalSymbols(TabUtils.currentClassObj.getType());						
