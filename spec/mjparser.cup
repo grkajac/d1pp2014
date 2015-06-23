@@ -265,7 +265,7 @@ parser code {:
     }
 
 	/*
-	 * Vezuju se klase dete roditelj i kopiraju se atributi klase roditelja u trenutni scope.
+	 * Vezuju se klase dete roditelj i kopiraju se atributi klase roditelja u trenutno otvoreni opseg.
 	 
 	 * Pogledaj PP1_P9a.doc strana 2.
 	 */
@@ -282,13 +282,7 @@ parser code {:
 		childClassObj.getType().setElementType(parentClassObj.getType());
 		
 		// Za nadjenu superklasu, kopiraj sve nasledjene atribute u izvedenu klasu
-		Collection<Obj> parentClassMembers = parentClassObj.getType().getMembers();
-		
-		for(Obj member: parentClassMembers) {
-			if(Obj.Fld == member.getKind()) {
-				Tab.currentScope().addToLocals(member);
-			}
-		}
+		TabUtils.copyParentClassMembers(Obj.Fld);
 		
 		return true;
     }
@@ -1047,7 +1041,7 @@ ClassVarList_RBRACE_Recovery ::= ClassVarList ClassMethodDecl RBRACE
                                  |
                                  ClassVarList
                                  {:
-                                 	TabUtils.copyParentClassMethods();
+                                 	TabUtils.copyParentClassMembers(Obj.Meth);
                                  :}
                                  RBRACE
                                  |
@@ -1080,7 +1074,7 @@ C_VarList ::= C_VarList COMMA VarPart
 
 ClassMethodDecl ::= LBRACE:l 
 					{: 
-						TabUtils.copyParentClassMethods(); 
+						TabUtils.copyParentClassMembers(Obj.Meth); 
 						
 						// Vezu se atributi klase za currentClassObj, da bi mogao da se koristi this u metodama.
 						Tab.chainLocalSymbols(TabUtils.currentClassObj.getType());						

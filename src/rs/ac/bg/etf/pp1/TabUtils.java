@@ -244,9 +244,9 @@ public class TabUtils {
 	}
 
 	/**
-	 * Kopira metode nadklase u klasu koja se trenutno obradjuje.
+	 * Kopira clanove (atribute ili metode) roditeljske klase u trenutni otvoreni opseg.
 	 */
-	public static void copyParentClassMethods() {
+	public static void copyParentClassMembers(int kind) {
 
 		if (!parentClassExists()) {
 			return;
@@ -255,7 +255,7 @@ public class TabUtils {
 		Collection<Obj> parentClassMembers = getParentMembers();
 
 		for (Obj member : parentClassMembers) {
-			if (Obj.Meth == member.getKind()) {
+			if (kind == member.getKind()) {
 				Tab.currentScope().addToLocals(member);
 			}
 		}
