@@ -9,19 +9,21 @@ package rs.ac.bg.etf.pp1;
  */
 
 public enum ScopeNode {
-    GLOBAL(1),
+	GLOBAL(1),
 
-    CLASS(2),
+	CLASS(2),
 
-    ABSTRACT_CLASS(3);
+	ABSTRACT_CLASS(3);
 
-    private int scope;
+	private int scope;
 
-    private ScopeNode(int s) {
-        scope = s;
-    }
+	private ScopeNode(int s) {
 
-    public int getScope() {
-        return scope;
-    }
+		scope = s;
+	}
+
+	public int getScope() {
+
+		return scope;
+	}
 }

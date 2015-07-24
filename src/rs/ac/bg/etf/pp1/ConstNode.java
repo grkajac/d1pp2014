@@ -9,18 +9,20 @@ package rs.ac.bg.etf.pp1;
  */
 public enum ConstNode {
 
-    NUMBER(1),
-    CHAR(2),
-    BOOL(3),
-    STRING(4);
+	NUMBER(1),
+	CHAR(2),
+	BOOL(3),
+	STRING(4);
 
-    private int constant;
+	private int constant;
 
-    private ConstNode(int constant){
-        this.constant = constant;
-    }
+	private ConstNode(int constant) {
 
-    public int getConstant(){
-        return this.constant;
-    }
+		this.constant = constant;
+	}
+
+	public int getConstant() {
+
+		return this.constant;
+	}
 }

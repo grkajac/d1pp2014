@@ -65,8 +65,7 @@ public enum SemanticErrorDesc {
 	S2_46("Semanticka greska [S2-46] na liniji replaceString : 'replaceString1' nije deklarisano unutar klase"),
 	S2_47(
 			"Semanticka greska [S2-47] na liniji replaceString : stvarni parametar na poziciji replaceString1 nije kompatibilan pri dodeli sa formalnim parametrom metode"),
-	S2_48("Semanticka greska [S2-48] na liniji replaceString : pri uslovnim proverama, izraz nije tipa bool"),
-	S2_49("Semanticka greska [S2-49] na liniji replaceString : stvarni parametar predefinisane len f-je mora biti niz");
+	S2_48("Semanticka greska [S2-48] na liniji replaceString : pri uslovnim proverama, izraz nije tipa bool");
 
 	private final String errorCode;
 

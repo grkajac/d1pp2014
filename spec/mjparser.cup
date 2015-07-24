@@ -163,7 +163,8 @@ parser code {:
            report_error(SemanticErrorDesc.S2_08.print(idleft), null);
            return;
         }
-
+		
+		// Provera samo za trenutni opseg, ostali opsezi mogu sadrzati promenljive istog imena
         Obj promenljiva = Tab.currentScope().findSymbol(id);
 
 		// Provera da li je promenljiva vec definisana
@@ -278,7 +279,7 @@ parser code {:
 			return false;			
 		}
 		
-		// Povezujemo klase dete roditelj.
+		// Povezujemo klase dete roditelj. U objektu Struct (atribut members) se nalaze elementi klase
 		childClassObj.getType().setElementType(parentClassObj.getType());
 		
 		// Za nadjenu superklasu, kopiraj sve nasledjene atribute u izvedenu klasu
@@ -350,21 +351,21 @@ parser code {:
        return obj;
     }
 
-    public Obj getClassDesignator(String name, int nameleft) {
+	// TODO
+    public Obj getClassDesignator(Obj classObj, String name, int nameleft) {
 
-        if(TabUtils.currentDesignatorObj.getType().getKind() != Struct.Class) {
-             report_error(SemanticErrorDesc.S2_45.print(nameleft, TabUtils.currentDesignatorObj.getName()), null);
+        if(classObj.getType().getKind() != Struct.Class) {
+             report_error(SemanticErrorDesc.S2_45.print(nameleft, classObj.getName()), null);
              return Tab.noObj;
         }
 
-		Obj result = TabUtils.findMemberInClass(TabUtils.currentDesignatorObj, name);
+		Obj result = TabUtils.findMemberInClass(classObj, name);
 
         if(Tab.noObj.equals(result)) {
            report_error(SemanticErrorDesc.S2_46.print(nameleft, name), null);
            return Tab.noObj;
         }
        
-        TabUtils.currentDesignatorObj = result;
         return result;
     }
 
@@ -485,7 +486,7 @@ parser code {:
 
           while(actualParams.hasNext() && formalParams.hasNext()) {
 			  
-              if(!TabUtils.assignableTo(actualParams.next(), formalParams.next().getType())) {
+              if(!TabUtils.assignableTo(formalParams.next().getType(), actualParams.next())) {
 
                   report_error(SemanticErrorDesc.S2_47.print(funcleft, counter), null);
                   isOK = false;
@@ -515,6 +516,7 @@ parser code {:
            functionCallsInMainCount++;
         }
 
+		// TODO
         if(ScopeNode.GLOBAL.equals(scope)) {
             report_info("Poziv globalne funkcije na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
         } 
@@ -522,6 +524,7 @@ parser code {:
 		if(ScopeNode.CLASS.equals(scope)) {
             report_info("Poziv metode un.klase na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
         }
+        
         return func.getType();
     }
 
@@ -621,19 +624,6 @@ parser code {:
 		}
 
         Code.store(d);
-    }
-    
-    public void checkLenFunc(Struct e, int eleft) {
-    	
-    	if(Struct.Array == e.getKind()) {
-    		Code.put(Code.arraylength); 
-    	} else {
-    		report_error(SemanticErrorDesc.S2_49.print(eleft), null);
-    	}
-    	
-    	if(TabUtils.hasMainFunc) {
-    		functionCallsInMainCount++;
-    	}
     }
 
     public boolean checkEqualExpr(Obj d, Struct s, int dleft) {
@@ -796,7 +786,6 @@ terminal Boolean BOOLVAL ;
 terminal Character CHARCONST ;
 terminal String STRING_LITERAL ;
 terminal String IDENT ;
-terminal LEN;
 
 non terminal Program, GlobalDeclaration, GlobalDeclList, GlobalDeclPart;
 non terminal ConstDecl, ConstDeclSemi, ConstDeclList, ConstDeclPart;
@@ -818,7 +807,7 @@ non terminal MethodVarDeclLB_Recovery;
 non terminal Integer Addop, Mulop, Relop;
 
 non terminal Obj ProgBegin, ClassExtendsLB_Recovery, MethodName;
-non terminal Obj Designator, DesignatorList, DesignatorPart, ExprInSquaresRS_Recovery, ProgramFunc;
+non terminal Obj Designator, DesignatorList, ExprInSquaresRS_Recovery, ProgramFunc;
 non terminal Struct Type, MethodRetType, Term, Term_list, Expr, Factor, Factor_list;
 
 non terminal Boolean Brace_condition, Condition, CondTermOR, CondTerm, CondFactAND, CondFact;
@@ -873,18 +862,18 @@ Type ::= IDENT:typeName
         
 // ---------------------- CONST DECL --------------------------
 
-ConstDeclSemi ::= CONST Type:tip
-                  {:
-                     TabUtils.currentVarType = tip;
-                  :}
-                  ConstDeclList;
-
 ConstDecl ::= ConstDeclSemi SEMI
               |
               error SEMI:e
               {:
                  parser.report_error(SintaxErrorDesc.S1_00.print(eleft), null);
               :};
+
+ConstDeclSemi ::= CONST Type:tip
+                  {:
+                     TabUtils.currentVarType = tip;
+                  :}
+                  ConstDeclList;
 
 ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
                      |
@@ -1370,11 +1359,6 @@ FuncCalls ::= READ LPAREN Designator:d RPAREN SEMI
                     parser.checkPrint(e, eleft, n);
               :}
               |
-              LEN LPAREN Expr:e RPAREN SEMI
-              {:
-              		parser.checkLenFunc(e, eleft);
-              :}
-              |
               ProgramFunc:func ActualPars_Rparen_Recovery:ap SEMI
               {:
                    RESULT = parser.checkFunc(func, funcleft, scope);
@@ -1533,11 +1517,6 @@ Factor ::= NUMBER:n
                }
            :}
            |
-           LEN LPAREN Expr:e RPAREN SEMI
-           {:
-          		parser.checkLenFunc(e, eleft);
-           :}
-           |
            ProgramFunc:func ActualPars_Rparen_Recovery:ap
            {:
                RESULT = parser.checkFunc(func, funcleft, scope);
@@ -1571,50 +1550,34 @@ ActualParamList ::= ActualParamList COMMA Expr:e
                        //Code.put(Code.pop); // stvarni parametri nisu implementirani, pa da ne ostanu na steku
 					:};
 
-Designator ::= IDENT:name
-                {:
-                    TabUtils.currentDesignatorObj = parser.getDesignator(name, nameleft, scope);
+Designator ::= DesignatorList:d 
+			   {: 
+			   		RESULT = d;
+			   :};
 
-                    Code.load(TabUtils.currentDesignatorObj);
-                :}
-                DesignatorList:dsList
-                {:
-                    RESULT = dsList;
 
-                    TabUtils.currentDesignatorObj = Tab.noObj;
-                :}
-                |
-                IDENT:name
-                {:
-                    RESULT = parser.getDesignator(name, nameleft, scope);
-                :};
-
-DesignatorList ::= DesignatorList DesignatorPart:dlp
-                   {:
-                        RESULT = dlp;
-                   :}
-                   |
-                   DesignatorPart:dp
-                   {:
-                        RESULT = dp;
-                   :};
-
-DesignatorPart ::=  ExprInSquaresRS_Recovery:exSqr
+DesignatorList ::=  DesignatorList:d ExprInSquaresRS_Recovery:exSqr
                     {:
-                        if(TabUtils.currentDesignatorObj.getType().getKind() != Struct.Array) {
+                        if(d.getType().getKind() != Struct.Array) {
 
                             parser.report_error(SemanticErrorDesc.S2_44.print(exSqrleft), null);
                             RESULT = Tab.noObj;
                         } else {
 
-                            RESULT = new Obj(Obj.Elem, "Elem", TabUtils.currentDesignatorObj.getType().getElemType());
+                            RESULT = new Obj(Obj.Elem, "Elem", d.getType().getElemType());
                         }
                     :}
                     |
-                    DOT IDENT:name
+                    DesignatorList:d DOT IDENT:name
                     {:
-						RESULT = parser.getClassDesignator(name, nameleft);
-                    :};  
+						RESULT = parser.getClassDesignator(d, name, nameleft);
+                    :}
+                    |
+	                IDENT:name
+	                {:
+	                    RESULT = parser.getDesignator(name, nameleft, scope);
+	                :};
+
                     
 ExprInSquaresRS_Recovery ::= LSQUARE Expr:e RSQUARE
                              {:

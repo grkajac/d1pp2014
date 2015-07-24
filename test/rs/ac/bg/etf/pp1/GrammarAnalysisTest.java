@@ -45,9 +45,9 @@ public class GrammarAnalysisTest {
 	 */
 	private static Map<String, TestResult> actualTestsResults;
 
-    private String singleTestName;
+	private String singleTestName;
 
-    private String singleTestIndex;
+	private String singleTestIndex;
 
 	public GrammarAnalysisTest(String testName, String testIndex) {
 
@@ -55,46 +55,47 @@ public class GrammarAnalysisTest {
 		this.singleTestIndex = testIndex;
 	}
 
-    // For this feature JUnit 4.11 > is needed
-    @Parameters(name = "testing {0}")
-    public static Collection<String[]> data() {
+	// For this feature JUnit 4.11 > is needed
+	@Parameters(name = "testing {0}")
+	public static Collection<String[]> data() {
 
-        readExpectedTestResults();
+		readExpectedTestResults();
 
-        readActualTestResults();
+		readActualTestResults();
 
-        return getData();
-    }
+		return getData();
+	}
 
 	// formatter:off
 	/**
-	 * Metoda puni objekat {@link #expectedTestResultList} sa podacima iz testConfig.json fajla. 
-	 * U fajlu testConfig.json se nalazi lista ocekivanih rezultata za svaki pokrenuti test.
+	 * Metoda puni objekat {@link #expectedTestResultList} sa podacima iz testConfig.json fajla. U fajlu testConfig.json se nalazi lista
+	 * ocekivanih rezultata za svaki pokrenuti test.
 	 */
 	// formatter:on
-    protected static void readExpectedTestResults() {
+	protected static void readExpectedTestResults() {
 
-        ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = new ObjectMapper();
 
-        try {
+		try {
 
-            // read from file, and convert to the user object
+			// read from file, and convert to the user object
 			expectedTestResultList = mapper.readValue(new File(EXPECTED_TEST_RESULTS_FILE_PATH), new TypeReference<List<TestResult>>() {
-            });
+			});
 
-        } catch (JsonGenerationException | JsonMappingException e) {
+		} catch (JsonGenerationException | JsonMappingException e) {
 
-            e.printStackTrace();
+			e.printStackTrace();
 
-        } catch (IOException e) {
+		} catch (IOException e) {
 
-            e.printStackTrace();
-        }
-    }
+			e.printStackTrace();
+		}
+	}
 
-    protected static void readActualTestResults() {
-        actualTestsResults = ActualTestResults.getResults();
-    }
+	protected static void readActualTestResults() {
+
+		actualTestsResults = ActualTestResults.getResults();
+	}
 
 	private static Collection<String[]> getData() {
 
@@ -116,20 +117,20 @@ public class GrammarAnalysisTest {
 		return Arrays.asList(data);
 	}
 
-    @Test
-    public void testGrammar() {
+	@Test
+	public void testGrammar() {
 
 		TestResult expectedTest = expectedTestResultList.get(Integer.valueOf(singleTestIndex));
 
 		TestResult actualTest = actualTestsResults.get(singleTestName);
 
-        if (actualTest == null) {
+		if (actualTest == null) {
 
-            fail("Nije nadjen aktuelni test sa imenom " + expectedTest.getName());
+			fail("Nije nadjen aktuelni test sa imenom " + expectedTest.getName());
 
-        } else {
+		} else {
 
 			TestComparingUtils.isEqual(actualTest, expectedTest);
-        }
-    }
+		}
+	}
 }

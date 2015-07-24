@@ -7,66 +7,75 @@ import java.util.List;
  *
  * Class that holds informations about counting, syntax & semantic errors.
  *
- * User: Aleksandar Grkajac aleksa888@gmail.com, ga040202d@student.etf.rs
- * Date: 7/18/14 Time: 5:23 PM
+ * User: Aleksandar Grkajac aleksa888@gmail.com, ga040202d@student.etf.rs Date: 7/18/14 Time: 5:23 PM
  *
  */
 public class TestResult {
 
-    private String name;
+	private String name;
 
-    private Brojanje brojanje;
+	private Brojanje brojanje;
 
-    private List<GrammarError> syntaxErrorList;
+	private List<GrammarError> syntaxErrorList;
 
-    private List<GrammarError> semanticErrorList;
+	private List<GrammarError> semanticErrorList;
 
-    public TestResult() {
+	public TestResult() {
 
-        brojanje = new Brojanje();
+		brojanje = new Brojanje();
 
-        syntaxErrorList = new ArrayList<>();
+		syntaxErrorList = new ArrayList<>();
 
-        semanticErrorList = new ArrayList<>();
-    }
+		semanticErrorList = new ArrayList<>();
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
 
-    public void setName(String name) {
-        this.name = name;
-    }
+		return name;
+	}
 
-    public Brojanje getBrojanje() {
-        return brojanje;
-    }
+	public void setName(String name) {
 
-    public void setBrojanje(Brojanje brojanje) {
-        this.brojanje = brojanje;
-    }
+		this.name = name;
+	}
 
-    public List<GrammarError> getSyntaxErrorList() {
-        return syntaxErrorList;
-    }
+	public Brojanje getBrojanje() {
 
-    public void setSyntaxErrorList(List<GrammarError> syntaxErrorList) {
-        this.syntaxErrorList = syntaxErrorList;
-    }
+		return brojanje;
+	}
 
-    public List<GrammarError> getSemanticErrorList() {
-        return semanticErrorList;
-    }
+	public void setBrojanje(Brojanje brojanje) {
 
-    public void setSemanticErrorList(List<GrammarError> semanticErrorList) {
-        this.semanticErrorList = semanticErrorList;
-    }
+		this.brojanje = brojanje;
+	}
 
-    public void addSemanticError(GrammarError grammarError) {
-        semanticErrorList.add(grammarError);
-    }
+	public List<GrammarError> getSyntaxErrorList() {
 
-    public void addSyntaxError(GrammarError grammarError) {
-        syntaxErrorList.add(grammarError);
-    }
+		return syntaxErrorList;
+	}
+
+	public void setSyntaxErrorList(List<GrammarError> syntaxErrorList) {
+
+		this.syntaxErrorList = syntaxErrorList;
+	}
+
+	public List<GrammarError> getSemanticErrorList() {
+
+		return semanticErrorList;
+	}
+
+	public void setSemanticErrorList(List<GrammarError> semanticErrorList) {
+
+		this.semanticErrorList = semanticErrorList;
+	}
+
+	public void addSemanticError(GrammarError grammarError) {
+
+		semanticErrorList.add(grammarError);
+	}
+
+	public void addSyntaxError(GrammarError grammarError) {
+
+		syntaxErrorList.add(grammarError);
+	}
 }

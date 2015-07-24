@@ -19,7 +19,8 @@ public enum SintaxErrorDesc {
 	S1_08("Sintaksna greska [S1-08] na liniji replaceString : prilikom deklaracije lokalnih prom., izvrsen oporavak do {"),
 	S1_09("Sintaksna greska [S1-09] na liniji replaceString : prilikom deklaracije formalnih prom, izvrsen oporavak do ,"),
 	S1_10("Sintaksna greska [S1-10] na liniji replaceString : prilikom deklaracije formalnih prom, izvrsen oporavak do )"),
-	S1_11("Sintaksna greska [S1-11] na liniji replaceString : logickog izraza unutar if ili while konstrukcije, izvrsen oporavak do prvog znaka )"),
+	S1_11(
+			"Sintaksna greska [S1-11] na liniji replaceString : logickog izraza unutar if ili while konstrukcije, izvrsen oporavak do prvog znaka )"),
 	S1_12("Sintaksna greska [S1-12] na liniji replaceString : prilikom dodele vrednosti, izvrsen oporavak do ;"),
 	S1_13("Sintaksna greska [S1-13] na liniji replaceString : prilikom poziva funkcije, izvrsen oporavak do ;"),
 	S1_14("Sintaksna greska [S1-14] na liniji replaceString : u listi parametara pri pozivu f-je, izvrsen oporavak do )"),
@@ -28,15 +29,18 @@ public enum SintaxErrorDesc {
 	private final String errorCode;
 
 	private SintaxErrorDesc(final String errorCode) {
+
 		this.errorCode = errorCode;
 	}
 
 	@Override
 	public String toString() {
+
 		return errorCode;
 	}
 
 	public String print(int line) {
+
 		return errorCode.replaceFirst("replaceString", String.valueOf(line));
 	}
 

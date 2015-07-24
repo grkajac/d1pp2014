@@ -9,121 +9,136 @@ package rs.ac.bg.etf.pp1;
  */
 public class Brojanje {
 
-    private Integer glob_promenljivih;
-    private Integer glob_nizova;
+	private Integer glob_promenljivih;
+	private Integer glob_nizova;
 
-    private Integer funkcija;
-    private Integer un_klasa;
-    private Integer blokova_naredbi;
-    private Integer poziva_funkcija;
-    private Integer instanciranja;
+	private Integer funkcija;
+	private Integer un_klasa;
+	private Integer blokova_naredbi;
+	private Integer poziva_funkcija;
+	private Integer instanciranja;
 
-    // Klase
-    private Integer metoda;
-    private Integer atributa;
-    private Integer izvodjenja;
+	// Klase
+	private Integer metoda;
+	private Integer atributa;
+	private Integer izvodjenja;
 
-    public Brojanje() {
-    }
+	public Brojanje() {
 
-    public Integer getGlob_promenljivih() {
-        return glob_promenljivih;
-    }
+	}
 
-    public void setGlob_promenljivih(Integer glob_promenljivih) {
-        this.glob_promenljivih = glob_promenljivih;
-    }
+	public Integer getGlob_promenljivih() {
 
-    public Integer getGlob_nizova() {
-        return glob_nizova;
-    }
+		return glob_promenljivih;
+	}
 
-    public void setGlob_nizova(Integer glob_nizova) {
-        this.glob_nizova = glob_nizova;
-    }
+	public void setGlob_promenljivih(Integer glob_promenljivih) {
 
-    public Integer getFunkcija() {
-        return funkcija;
-    }
+		this.glob_promenljivih = glob_promenljivih;
+	}
 
-    public void setFunkcija(Integer funkcija) {
-        this.funkcija = funkcija;
-    }
+	public Integer getGlob_nizova() {
 
-    public Integer getUn_klasa() {
-        return un_klasa;
-    }
+		return glob_nizova;
+	}
 
-    public void setUn_klasa(Integer un_klasa) {
-        this.un_klasa = un_klasa;
-    }
+	public void setGlob_nizova(Integer glob_nizova) {
 
-    public Integer getBlokova_naredbi() {
-        return blokova_naredbi;
-    }
+		this.glob_nizova = glob_nizova;
+	}
 
-    public void setBlokova_naredbi(Integer blokova_naredbi) {
-        this.blokova_naredbi = blokova_naredbi;
-    }
+	public Integer getFunkcija() {
 
-    public Integer getPoziva_funkcija() {
-        return poziva_funkcija;
-    }
+		return funkcija;
+	}
 
-    public void setPoziva_funkcija(Integer poziva_funkcija) {
-        this.poziva_funkcija = poziva_funkcija;
-    }
+	public void setFunkcija(Integer funkcija) {
 
-    public Integer getInstanciranja() {
-        return instanciranja;
-    }
+		this.funkcija = funkcija;
+	}
 
-    public void setInstanciranja(Integer instanciranja) {
-        this.instanciranja = instanciranja;
-    }
+	public Integer getUn_klasa() {
 
-    public Integer getMetoda() {
-        return metoda;
-    }
+		return un_klasa;
+	}
 
-    public void setMetoda(Integer metoda) {
-        this.metoda = metoda;
-    }
+	public void setUn_klasa(Integer un_klasa) {
 
-    public Integer getAtributa() {
-        return atributa;
-    }
+		this.un_klasa = un_klasa;
+	}
 
-    public void setAtributa(Integer atributa) {
-        this.atributa = atributa;
-    }
+	public Integer getBlokova_naredbi() {
 
-    public Integer getIzvodjenja() {
-        return izvodjenja;
-    }
+		return blokova_naredbi;
+	}
 
-    public void setIzvodjenja(Integer izvodjenja) {
-        this.izvodjenja = izvodjenja;
-    }
+	public void setBlokova_naredbi(Integer blokova_naredbi) {
 
-   public boolean isEqual(Brojanje brojanje) {
+		this.blokova_naredbi = blokova_naredbi;
+	}
 
-       boolean result = false;
+	public Integer getPoziva_funkcija() {
 
-       if( glob_promenljivih.equals(brojanje.getGlob_promenljivih()) &&
-           glob_nizova.equals(brojanje.getGlob_nizova()) &&
-           funkcija.equals(brojanje.getFunkcija()) &&
-           un_klasa.equals(brojanje.getUn_klasa()) &&
-           blokova_naredbi.equals(brojanje.getBlokova_naredbi()) &&
-           poziva_funkcija.equals(brojanje.getPoziva_funkcija()) &&
-           instanciranja.equals(brojanje.getInstanciranja()) &&
-           metoda.equals(brojanje.getMetoda()) &&
-           atributa.equals(brojanje.getAtributa()) &&
-           izvodjenja.equals(brojanje.getIzvodjenja())
-               ) {
-           result = true;
-       }
+		return poziva_funkcija;
+	}
 
-       return result;
-   }
+	public void setPoziva_funkcija(Integer poziva_funkcija) {
+
+		this.poziva_funkcija = poziva_funkcija;
+	}
+
+	public Integer getInstanciranja() {
+
+		return instanciranja;
+	}
+
+	public void setInstanciranja(Integer instanciranja) {
+
+		this.instanciranja = instanciranja;
+	}
+
+	public Integer getMetoda() {
+
+		return metoda;
+	}
+
+	public void setMetoda(Integer metoda) {
+
+		this.metoda = metoda;
+	}
+
+	public Integer getAtributa() {
+
+		return atributa;
+	}
+
+	public void setAtributa(Integer atributa) {
+
+		this.atributa = atributa;
+	}
+
+	public Integer getIzvodjenja() {
+
+		return izvodjenja;
+	}
+
+	public void setIzvodjenja(Integer izvodjenja) {
+
+		this.izvodjenja = izvodjenja;
+	}
+
+	public boolean isEqual(Brojanje brojanje) {
+
+		boolean result = false;
+
+		if (glob_promenljivih.equals(brojanje.getGlob_promenljivih()) && glob_nizova.equals(brojanje.getGlob_nizova())
+				&& funkcija.equals(brojanje.getFunkcija()) && un_klasa.equals(brojanje.getUn_klasa())
+				&& blokova_naredbi.equals(brojanje.getBlokova_naredbi()) && poziva_funkcija.equals(brojanje.getPoziva_funkcija())
+				&& instanciranja.equals(brojanje.getInstanciranja()) && metoda.equals(brojanje.getMetoda())
+				&& atributa.equals(brojanje.getAtributa()) && izvodjenja.equals(brojanje.getIzvodjenja())) {
+			result = true;
+		}
+
+		return result;
+	}
 }

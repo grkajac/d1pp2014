@@ -1,10 +1,5 @@
 package rs.ac.bg.etf.pp1;
 
-/**
- * Created with IntelliJ IDEA. User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com Date: 5/1/14 Time: 11:35 PM To change
- * this template use File | Settings | File Templates.
- */
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -14,6 +9,12 @@ import rs.etf.pp1.symboltable.concepts.Struct;
 import rs.etf.pp1.symboltable.structure.HashTableDataStructure;
 import rs.etf.pp1.symboltable.structure.SymbolDataStructure;
 import rs.etf.pp1.symboltable.visitors.DumpSymbolTableVisitor;
+
+/**
+ * Created with IntelliJ IDEA. 
+ * User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com 
+ * Date: 5/1/14 Time: 11:35 PM
+ */
 
 public class TabUtils {
 
@@ -42,11 +43,9 @@ public class TabUtils {
 	public static ArrayList<Struct> actualParams = new ArrayList<Struct>();
 	public static int actualParamCount = 0;
 
-	public static Obj currentDesignatorObj = Tab.noObj;
-
 	public static boolean inWhile = false;
 
-//	public static boolean hasAbstractMethod = false;
+	// public static boolean hasAbstractMethod = false;
 
 	public static void resetAll() {
 
@@ -64,15 +63,14 @@ public class TabUtils {
 		actualParams = new ArrayList<Struct>();
 		actualParamCount = 0;
 
-		currentDesignatorObj = Tab.noObj;
-
 		inWhile = false;
 
-//		hasAbstractMethod = false;
+		// hasAbstractMethod = false;
 
 	}
 
 	public static void resetClassFlags() {
+
 		currentClassObj = Tab.noObj;
 	}
 
@@ -90,13 +88,13 @@ public class TabUtils {
 
 		DumpSymbolTableVisitor visitor = new DumpSymbolTableVisitor();
 		visitor.visitObjNode(obj);
-		
+
 		return visitor.getOutput();
 	}
 
 	/**
-	 * TODO
-	 * Pored osnovne funkcionalnosti, treba da se proverava i deo "Ako je dst referenca na osnovnu klasu, a src referenca na izvedenu klasu"
+	 * TODO Pored osnovne funkcionalnosti, treba da se proverava i deo
+	 * "Ako je dst referenca na osnovnu klasu, a src referenca na izvedenu klasu"
 	 */
 	public static boolean assignableTo(Struct dest, Struct src) {
 
@@ -112,38 +110,25 @@ public class TabUtils {
 	 * osnovne klase i gleda da li postoje u src listi izvedenih clanovima.
 	 */
 	public static boolean equalsClassRefs(Struct dest, Struct src) {
-		
+
 		if (dest.getKind() != Struct.Class || src.getKind() != Struct.Class) {
 			return false;
 		}
 
 		Collection<Obj> destMembers = dest.getMembers();
 		SymbolDataStructure srcMembers = src.getMembersTable();
-		
+
 		if (srcMembers.numSymbols() < destMembers.size()) {
 			return false;
 		}
-		
+
 		for (Obj obj : destMembers) {
 			if (srcMembers.searchKey(obj.getName()) == null) {
 				return false;
 			}
 		}
-		
+
 		return true;
-	}
-
-	/**
-	 * Nalazi Obj u trenutnom opsegu.
-	 *
-	 * @param fieldName ime polja koje se trazi.
-	 * @return
-	 */
-	public static Obj findInCurrentScope(String fieldName) {
-
-		Obj findedObj = Tab.currentScope.findSymbol(fieldName);
-
-		return (findedObj == null) ? Tab.noObj : findedObj;
 	}
 
 	/**
@@ -295,17 +280,4 @@ public class TabUtils {
 			}
 		}
 	}
-
-	/**
-	 * Postoje klase koje su:
-	 *
-	 * 1. Definisane 2. Koje su u procesu definicije.
-	 *
-	 * 1. Kod definisanih klasa trazenje polja se svodi na trazenje polja u njenom opsegu i opsegu njenih nadklase koje su u extendedClasses
-	 * mapi.
-	 *
-	 * 2. Kod klasa koje su u procesu definicije, polje koje trazimo nije prebaceno u opseg klase (to se radi na kraju obrade ,
-	 * Tab.chainLocalSymbols(classObj.getType())) vec treba traziti po opsezima. Trenutnom opsegu, opsegu iznad, opsegu nadklasa i na kraju
-	 * globalnom opsegu.
-	 */
 }
