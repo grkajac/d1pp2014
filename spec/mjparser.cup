@@ -533,32 +533,22 @@ parser code {:
         return (exp1.isRefType() && exp2.isRefType() && op != 0 && op != 1) ? true : false;
     }
 
-    public boolean condFactCheck(Struct exp1, Struct exp2, int exp1left, int op) {
+    public void condFactCheck(Struct exp1, Struct exp2, int exp1left, int op) {
 
         if(!exp1.compatibleWith(exp2)) {
-
            report_error(SemanticErrorDesc.S2_30.print(exp1left), null);
-           return false;
         }
 
         if(checkRefTypeOperator(exp1, exp2, op)) {
-
            report_error(SemanticErrorDesc.S2_31.print(exp1left), null);
-           return false;
         }
-        
-        return true;
     }
 
-    public boolean condFactCheck(Struct exp, int expleft) {
+    public void condFactCheck(Struct exp, int expleft) {
 
         if(!TabUtils.boolType.equals(exp)) {
-
             report_error(SemanticErrorDesc.S2_48.print(expleft), null);
-            return false;
         }
-
-        return true;
     }
 
     public boolean checkBasicType(Struct e) {
@@ -810,7 +800,7 @@ non terminal Obj ProgBegin, ClassExtendsLB_Recovery, MethodName;
 non terminal Obj Designator, DesignatorList, ExprInSquaresRS_Recovery, ProgramFunc;
 non terminal Struct Type, MethodRetType, Term, Term_list, Expr, Factor, Factor_list;
 
-non terminal Boolean Brace_condition, Condition, CondTermOR, CondTerm, CondFactAND, CondFact;
+non terminal Brace_condition, Condition, CondTerm, CondFact;
 non terminal Struct Dodela;
 non terminal FuncCalls;
 
@@ -1216,10 +1206,7 @@ FormalParamDecl_Comma_Recovery ::= FormalParamType VarPart COMMA
                                    :};
 
 FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
-                                    {:
-										
-                                    :}
-                                    |
+									|
                                     error RPAREN:l
                                     {:
                                         parser.report_error(SintaxErrorDesc.S1_10.print(lleft), null);
@@ -1376,38 +1363,22 @@ ProgramFunc ::= Designator:d LPAREN
                      RESULT = d;
                 :};
 
-Condition ::= CondTermOR:cor {: RESULT = cor; :};
-
-CondTermOR ::= CondTermOR:cor OR CondTerm:ct
-               {:
-                    RESULT = (ct || cor) ? true : false;
-               :}
+Condition ::= CondTerm OR Condition
                |
-               CondTerm:c
-               {:
-                    RESULT = c;
-               :};
+               CondTerm;
 
-CondTerm ::= CondFactAND:cand {: RESULT = cand; :};
-
-CondFactAND ::= CondFactAND:cand AND CondFact:cf
-                {:
-                    RESULT = (cf && cand) ? true : false;
-                :}
-                |
-                CondFact:cf
-                {:
-                     RESULT = cf;
-                :};
+CondTerm ::= CondFact AND CondTerm
+             |
+             CondFact;
 
 CondFact ::= Expr:exp1 Relop:op Expr:exp2
              {:
-                  RESULT = parser.condFactCheck(exp1, exp2, exp1left, op);
+                  parser.condFactCheck(exp1, exp2, exp1left, op);
              :}
              |
              Expr:exp1
              {:
-                 RESULT = parser.condFactCheck(exp1, exp1left);
+                 parser.condFactCheck(exp1, exp1left);
              :};
 
 Expr ::= Term_list:tl
@@ -1522,10 +1493,7 @@ Factor ::= NUMBER:n
                RESULT = parser.checkFunc(func, funcleft, scope);
            :};
 
-ActualPars_Rparen_Recovery ::= ActualPars RPAREN:lt
-                               {:
-
-                               :}
+ActualPars_Rparen_Recovery ::= ActualPars RPAREN
                                |
                                error RPAREN:l
                                {:
