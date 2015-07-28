@@ -51,21 +51,16 @@ public class TestComparingUtils {
 
 			return;
 		}
-
+		
 		Iterator<GrammarError> expectedIterator = expectedSyntaxErrorList.iterator();
 		Iterator<GrammarError> actualIterator = actualSyntaxErrorList.iterator();
 
-		GrammarError actualGrammarError = null;
-		GrammarError expectedGrammarError = null;
-		String errorMessage = null;
-
 		while (actualIterator.hasNext() && expectedIterator.hasNext()) {
 
-			actualGrammarError = actualIterator.next();
+			GrammarError actualGrammarError = actualIterator.next();
+			GrammarError expectedGrammarError = expectedIterator.next();
 
-			expectedGrammarError = expectedIterator.next();
-
-			errorMessage = message + " greska nije ista sa ocekivanom! [ " + actualGrammarError.getDescription() + " != "
+			String errorMessage = message + " greska nije ista sa ocekivanom! [ " + actualGrammarError.getDescription() + " != "
 					+ expectedGrammarError.getDescription() + ", " + actualGrammarError.getLine() + " != " + expectedGrammarError.getLine()
 					+ " ]";
 

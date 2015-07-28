@@ -1,11 +1,5 @@
 TODO
 
-1. Proveri lever, test 303 pravi problem sa level-ima. 
-   Nema problema, level za metodu predstavlja broj parametara. Nadji drugi nacin.
-
-
-
-
     {
         "name": "test11.mj",
         "brojanje": {

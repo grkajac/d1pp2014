@@ -11,6 +11,8 @@ import java_cup.runtime.Symbol;
 
 import org.apache.log4j.Logger;
 
+import rs.ac.bg.etf.pp1.MJParser;
+import rs.ac.bg.etf.pp1.Yylex;
 import rs.etf.pp1.symboltable.Tab;
 
 /**

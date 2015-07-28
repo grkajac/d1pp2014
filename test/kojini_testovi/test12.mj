@@ -1,0 +1,31 @@
+// neobradjene sintaksne greske 
+// neispravan test
+
+program TestApstraktneKlase
+	char c1, b2 d2;
+	int c, a2 b1, d1;
+
+	{
+	
+		int deli(int a, int b)
+		{ 
+			return a / b;	
+		}
+	
+		int racunaj() 
+		int , 
+		bool c;					//sintaksna, oporavak do ;
+		{ 
+			return 3;	
+		}
+
+		void glupost(int a char, char b) {  //sintaksna, oporavak do ,
+			return b;                     //semanticka metoda nema povratnu vrednost...
+		}
+		
+		void main ()
+		{
+			deli 1, 2);
+			c = racunaj(int ,);
+		}
+	}

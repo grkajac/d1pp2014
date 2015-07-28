@@ -374,6 +374,36 @@
         ]
     },
     {
+        "name": "test12.mj",
+        "brojanje": {
+            "glob_promenljivih": 3,
+            "glob_nizova": 0,
+            "funkcija": 4,
+            "un_klasa": 0,
+            "blokova_naredbi": 0,
+            "poziva_funkcija": 1,
+            "instanciranja": 0,
+            "metoda": 0,
+            "atributa": 0,
+            "izvodjenja": 0
+        },
+        "syntaxErrorList": [
+            { "line": 5, "description": "S1-02" },
+            { "line": 6, "description": "S1-03" },
+            
+            { "line": 17, "description": "S1-07" },
+            { "line": 22, "description": "S1-09" },
+            
+            { "line": 28, "description": "S1-13" },
+            { "line": 29, "description": "S1-14" }
+        ],
+        "semanticErrorList": [
+            { "line": 23, "description": "S2-23" },
+            { "line": 0, "description": "S2-17" },
+            { "line": 29, "description": "S2-26" }
+        ]
+    },
+    {
         "name": "test301.mj",
         "brojanje": {
             "glob_promenljivih": 2,

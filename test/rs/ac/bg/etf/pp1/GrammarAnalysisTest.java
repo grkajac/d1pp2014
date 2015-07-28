@@ -33,7 +33,7 @@ public class GrammarAnalysisTest {
 	/**
 	 * Naziv fajla u kome su rezultati testova koje ocekujemo da su ispravni. Sadrzi listu parametara za svaki test u json formatu.
 	 */
-	private static final String EXPECTED_TEST_RESULTS_FILE_PATH = "testConfig.json";
+	private static final String EXPECTED_TEST_RESULTS_FILE_PATH = "config/testing.json";
 
 	/**
 	 * Lista ocekivanih rezultata testova.
