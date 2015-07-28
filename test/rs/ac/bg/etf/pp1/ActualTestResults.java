@@ -38,8 +38,8 @@ public class ActualTestResults {
 
 	public static final String TEST_PATH = "test/kojini_testovi";
 	public static final String CURRENT_PARSED_TEST_PATH = "logs/testResult.log";
-	public static final String PARSED_TESTS_SINGLE_LOG_PATH = "logs-test";
-	public static final String GENERATED_CODE_TEST_PATH = "logs-generatedcode";
+	public static final String PARSED_TESTS_SINGLE_LOG_PATH = "logs/test";
+	public static final String GENERATED_CODE_TEST_PATH = "logs/generatedcode";
 
 	private static List<File> testFiles = new ArrayList<>();
 	private static Map<String, TestResult> results = new HashMap<>();
