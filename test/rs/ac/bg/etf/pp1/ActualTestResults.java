@@ -27,6 +27,7 @@ import rs.ac.bg.etf.pp1.testing.dto.Counting;
 import rs.ac.bg.etf.pp1.testing.dto.GrammarError;
 import rs.ac.bg.etf.pp1.testing.dto.TestResult;
 import rs.ac.bg.etf.pp1.util.Log4JUtils;
+import rs.ac.bg.etf.pp1.util.TabUtils;
 import rs.etf.pp1.mj.runtime.Code;
 
 /**

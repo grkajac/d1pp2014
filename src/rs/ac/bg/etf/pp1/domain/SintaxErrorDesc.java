@@ -1,4 +1,4 @@
-package rs.ac.bg.etf.pp1;
+package rs.ac.bg.etf.pp1.domain;
 
 /**
  * Globalni enum za opis svih sintaksnih gresaka.

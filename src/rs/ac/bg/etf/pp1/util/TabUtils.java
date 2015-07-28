@@ -1,4 +1,4 @@
-package rs.ac.bg.etf.pp1;
+package rs.ac.bg.etf.pp1.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

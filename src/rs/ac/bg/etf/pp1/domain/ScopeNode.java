@@ -1,4 +1,4 @@
-package rs.ac.bg.etf.pp1;
+package rs.ac.bg.etf.pp1.domain;
 
 /**
  * Created with IntelliJ IDEA.

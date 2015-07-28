@@ -4,6 +4,10 @@ import java_cup.runtime.*;
 import org.apache.log4j.*;
 
 // import java.io.*;
+
+import rs.ac.bg.etf.pp1.domain.*;
+import rs.ac.bg.etf.pp1.util.*;
+
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.*;
 import rs.etf.pp1.mj.runtime.Code;
