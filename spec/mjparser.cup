@@ -781,9 +781,8 @@ non terminal Program, GlobalDeclaration, GlobalDeclList, GlobalDeclPart;
 non terminal ConstDecl, ConstDeclSemi, ConstDeclList, ConstDeclPart;
 non terminal VarDecl, VarList, VarPart, VarPart_Comma_Recovery, VarPart_Semi_Recovery;
 non terminal ClassDecl, AbsClass;
-non terminal ClassDefinition, ClassVarList, ClassVarPart, ClassVarList_RBRACE_Recovery;
-non terminal ClassMethodDecl, ClassMethodList, ClassMethodPart;
-non terminal C_VarDecl, C_VarList;
+non terminal ClassDefinition, ClassVarDecl, ClassVarList, ClassVarPart;
+non terminal ClassMethodDecl, C_VarDecl, C_VarList;
 non terminal MethodDecl, MethodDeclList, MethodDeclPart;
 non terminal MethodVarDeclList, LocalVarDecl_Semi_Recovery, LocalVarDecl_Lbrace_Recovery;
 non terminal M_VarList;
@@ -796,7 +795,7 @@ non terminal MethodVarDeclLB_Recovery;
 
 non terminal Integer Addop, Mulop, Relop;
 
-non terminal Obj ProgBegin, ClassExtendsLB_Recovery, MethodName;
+non terminal Obj ProgBegin, ClassName, MethodName;
 non terminal Obj Designator, DesignatorList, ExprInSquaresRS_Recovery, ProgramFunc;
 non terminal Struct Type, MethodRetType, Term, Term_list, Expr, Factor, Factor_list;
 
@@ -963,7 +962,7 @@ AbsClass ::=  CLASS
                  scope = ScopeNode.ABSTRACT_CLASS;
               :};
 
-ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
+ClassDecl ::= AbsClass ClassName:classObj ClassDefinition
               {:
 
                  if(!Tab.noObj.equals(classObj)){
@@ -982,52 +981,50 @@ ClassDecl ::= AbsClass ClassExtendsLB_Recovery:classObj ClassDefinition
                  scope = ScopeNode.GLOBAL;
               :};
 
-ClassExtendsLB_Recovery ::= IDENT:childClass EXTENDS IDENT:parentClass LBRACE
-                            {:
-                                RESULT = parser.classProcessing(childClass, childClassleft);
-                                
-                                Tab.openScope();
+ClassName ::= IDENT:childClass EXTENDS IDENT:parentClass LBRACE
+              {:
+                  RESULT = parser.classProcessing(childClass, childClassleft);
+                  
+                  Tab.openScope();
 
-                                boolean isLinkingSuccessful = parser.linkingChildParentClasses(parentClass, RESULT, parentClassleft);
-                                
-                                if(isLinkingSuccessful) {
-                                	parser.extendingClassesCount++;
-                                }
-                            :}
-                            |
-                            IDENT:childClass LBRACE
-                            {:
-                                RESULT = parser.classProcessing(childClass, childClassleft);
+                  boolean isLinkingSuccessful = parser.linkingChildParentClasses(parentClass, RESULT, parentClassleft);
+                   
+                  if(isLinkingSuccessful) {
+                  	parser.extendingClassesCount++;
+                  }
+              :}
+              |
+              IDENT:childClass LBRACE
+              {:
+                  RESULT = parser.classProcessing(childClass, childClassleft);
+                  Tab.openScope();
+              :}
+              |
+              error LBRACE:l
+              {:
+                  parser.report_error(SintaxErrorDesc.S1_04.print(lleft), null);
 
-                                Tab.openScope();
-                            :}
-                            |
-                            error LBRACE:l
-                            {:
-                                parser.report_error(SintaxErrorDesc.S1_04.print(lleft), null);
+                  RESULT = Tab.noObj;
+                  Tab.openScope();
+              :};
 
-                                RESULT = Tab.noObj;
-                                Tab.openScope();
-                            :};
-
-ClassDefinition ::= ClassVarList_RBRACE_Recovery
+ClassDefinition ::= ClassVarDecl 
+					{: 
+						TabUtils.copyParentClassMembers(Obj.Meth); 
+						
+						// Vezu se atributi klase za currentClassObj, da bi mogao da se koristi this u metodama.
+						Tab.chainLocalSymbols(TabUtils.currentClassObj.getType());						
+					:} 
+					ClassMethodDecl RBRACE
                     |
-                    ClassMethodDecl RBRACE
-                    |
-                    RBRACE;
+                    error RBRACE:l
+                    {:
+                       parser.report_error(SintaxErrorDesc.S1_05.print(lleft), null);
+                    :};
 
-ClassVarList_RBRACE_Recovery ::= ClassVarList ClassMethodDecl RBRACE
-                                 |
-                                 ClassVarList
-                                 {:
-                                 	TabUtils.copyParentClassMembers(Obj.Meth);
-                                 :}
-                                 RBRACE
-                                 |
-                                 error RBRACE:l
-                                 {:
-                                    parser.report_error(SintaxErrorDesc.S1_05.print(lleft), null);
-                                 :};
+ClassVarDecl ::= ClassVarList
+		   |
+		   /* epsilon */;
 
 ClassVarList ::= ClassVarList ClassVarPart
                  |
@@ -1051,20 +1048,9 @@ C_VarList ::= C_VarList COMMA VarPart
               |
               VarPart;
 
-ClassMethodDecl ::= LBRACE:l 
-					{: 
-						TabUtils.copyParentClassMembers(Obj.Meth); 
-						
-						// Vezu se atributi klase za currentClassObj, da bi mogao da se koristi this u metodama.
-						Tab.chainLocalSymbols(TabUtils.currentClassObj.getType());						
-					:} 
-					ClassMethodList RBRACE;
-
-ClassMethodList ::= ClassMethodList ClassMethodPart
-                    |
-                    ClassMethodPart;
-
-ClassMethodPart ::= MethodDeclPart;
+ClassMethodDecl ::= LBRACE MethodDecl RBRACE
+					|
+					/* epsilon */;
 
 // ---------------------- METHOD DECL --------------------------
 
