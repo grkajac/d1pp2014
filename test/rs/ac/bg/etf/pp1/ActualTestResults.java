@@ -23,6 +23,9 @@ import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
+import rs.ac.bg.etf.pp1.testing.dto.Counting;
+import rs.ac.bg.etf.pp1.testing.dto.GrammarError;
+import rs.ac.bg.etf.pp1.testing.dto.TestResult;
 import rs.ac.bg.etf.pp1.util.Log4JUtils;
 import rs.etf.pp1.mj.runtime.Code;
 
@@ -158,7 +161,7 @@ public class ActualTestResults {
 
 			// Level II
 
-			Brojanje testCounts = currentTest.getBrojanje();
+			Counting testCounts = currentTest.getCounting();
 
 			log.info("Broj deklaracija globalnih promenljivih prostog tipa = " + p.globalPrimitiveVarsCount);
 			testCounts.setGlob_promenljivih(p.globalPrimitiveVarsCount);

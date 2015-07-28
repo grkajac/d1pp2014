@@ -1,4 +1,4 @@
-package rs.ac.bg.etf.pp1;
+package rs.ac.bg.etf.pp1.testing.dto;
 
 /**
  * Created with IntelliJ IDEA.

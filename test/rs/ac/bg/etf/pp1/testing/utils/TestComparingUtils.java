@@ -1,4 +1,4 @@
-package rs.ac.bg.etf.pp1;
+package rs.ac.bg.etf.pp1.testing.utils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -6,20 +6,24 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.List;
 
+import rs.ac.bg.etf.pp1.testing.dto.Counting;
+import rs.ac.bg.etf.pp1.testing.dto.GrammarError;
+import rs.ac.bg.etf.pp1.testing.dto.TestResult;
+
 public class TestComparingUtils {
 
-	protected static void isEqual(TestResult actualTest, TestResult expectedTest) {
+	public static void isEqual(TestResult actualTest, TestResult expectedTest) {
 
 		assertEquals("Imena se ne slazu!", expectedTest.getName(), actualTest.getName());
 
-		isEqual(actualTest.getBrojanje(), expectedTest.getBrojanje());
+		isEqual(actualTest.getCounting(), expectedTest.getCounting());
 
 		isEqual(actualTest.getSyntaxErrorList(), expectedTest.getSyntaxErrorList(), "Sintaksna");
 
 		isEqual(actualTest.getSemanticErrorList(), expectedTest.getSemanticErrorList(), "Semanticka");
 	}
 
-	protected static void isEqual(Brojanje actual, Brojanje expected) {
+	public static void isEqual(Counting actual, Counting expected) {
 
 		assertEquals("Broj deklaracija globalnih promenljivih prostog tipa = ", expected.getGlob_promenljivih(),
 				actual.getGlob_promenljivih());

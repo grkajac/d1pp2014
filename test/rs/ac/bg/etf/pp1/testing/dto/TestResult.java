@@ -1,4 +1,4 @@
-package rs.ac.bg.etf.pp1;
+package rs.ac.bg.etf.pp1.testing.dto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public class TestResult {
 
 	private String name;
 
-	private Brojanje brojanje;
+	private Counting counting;
 
 	private List<GrammarError> syntaxErrorList;
 
@@ -22,7 +22,7 @@ public class TestResult {
 
 	public TestResult() {
 
-		brojanje = new Brojanje();
+		counting = new Counting();
 
 		syntaxErrorList = new ArrayList<>();
 
@@ -39,14 +39,14 @@ public class TestResult {
 		this.name = name;
 	}
 
-	public Brojanje getBrojanje() {
+	public Counting getCounting() {
 
-		return brojanje;
+		return counting;
 	}
 
-	public void setBrojanje(Brojanje brojanje) {
+	public void setCounting(Counting counting) {
 
-		this.brojanje = brojanje;
+		this.counting = counting;
 	}
 
 	public List<GrammarError> getSyntaxErrorList() {

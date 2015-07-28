@@ -18,7 +18,5 @@ public class MJParserTest {
 
 		Testing test = new SingleTesting();
 		test.testing(log);
-
 	}
-
 }

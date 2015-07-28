@@ -1,7 +1,7 @@
 [
     {
         "name": "test01.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 7,
             "glob_nizova": 0,
             "funkcija": 1,
@@ -18,7 +18,7 @@
     },
     {
         "name": "test02.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 3,
             "glob_nizova": 0,
             "funkcija": 1,
@@ -59,7 +59,7 @@
     },
     {
         "name": "test03.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 3,
             "glob_nizova": 0,
             "funkcija": 1,
@@ -82,7 +82,7 @@
     },
     {
         "name": "test04.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 4,
             "glob_nizova": 1,
             "funkcija": 2,
@@ -99,7 +99,7 @@
     },
     {
         "name": "test05.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 9,
             "glob_nizova": 0,
             "funkcija": 6,
@@ -175,7 +175,7 @@
     },
     {
         "name": "test06.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 3,
             "glob_nizova": 4,
             "funkcija": 1,
@@ -208,7 +208,7 @@
     },
     {
         "name": "test07.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 2,
             "glob_nizova": 1,
             "funkcija": 7,
@@ -225,7 +225,7 @@
     },
     {
         "name": "test08.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 1,
             "glob_nizova": 0,
             "funkcija": 1,
@@ -279,7 +279,7 @@
     },
     {
         "name": "test09.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 3,
             "glob_nizova": 0,
             "funkcija": 1,
@@ -337,7 +337,7 @@
     },
     {
         "name": "test10.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 0,
             "glob_nizova": 0,
             "funkcija": 3,
@@ -375,7 +375,7 @@
     },
     {
         "name": "test12.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 3,
             "glob_nizova": 0,
             "funkcija": 4,
@@ -405,7 +405,7 @@
     },
     {
         "name": "test301.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 2,
             "glob_nizova": 2,
             "funkcija": 1,
@@ -422,7 +422,7 @@
     },
     {
         "name": "test302.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 4,
             "glob_nizova": 1,
             "funkcija": 3,
@@ -439,7 +439,7 @@
     },
     {
         "name": "test303.mj",
-        "brojanje": {
+        "counting": {
             "glob_promenljivih": 1,
             "glob_nizova": 0,
             "funkcija": 3,

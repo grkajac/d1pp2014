@@ -1,4 +1,4 @@
-package rs.ac.bg.etf.pp1;
+package rs.ac.bg.etf.pp1.testing.dto;
 
 /**
  * Created with IntelliJ IDEA.
@@ -7,7 +7,7 @@ package rs.ac.bg.etf.pp1;
  * Time: 5:27 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Brojanje {
+public class Counting {
 
 	private Integer glob_promenljivih;
 	private Integer glob_nizova;
@@ -23,7 +23,7 @@ public class Brojanje {
 	private Integer atributa;
 	private Integer izvodjenja;
 
-	public Brojanje() {
+	public Counting() {
 
 	}
 
@@ -127,15 +127,15 @@ public class Brojanje {
 		this.izvodjenja = izvodjenja;
 	}
 
-	public boolean isEqual(Brojanje brojanje) {
+	public boolean isEqual(Counting counting) {
 
 		boolean result = false;
 
-		if (glob_promenljivih.equals(brojanje.getGlob_promenljivih()) && glob_nizova.equals(brojanje.getGlob_nizova())
-				&& funkcija.equals(brojanje.getFunkcija()) && un_klasa.equals(brojanje.getUn_klasa())
-				&& blokova_naredbi.equals(brojanje.getBlokova_naredbi()) && poziva_funkcija.equals(brojanje.getPoziva_funkcija())
-				&& instanciranja.equals(brojanje.getInstanciranja()) && metoda.equals(brojanje.getMetoda())
-				&& atributa.equals(brojanje.getAtributa()) && izvodjenja.equals(brojanje.getIzvodjenja())) {
+		if (glob_promenljivih.equals(counting.getGlob_promenljivih()) && glob_nizova.equals(counting.getGlob_nizova())
+				&& funkcija.equals(counting.getFunkcija()) && un_klasa.equals(counting.getUn_klasa())
+				&& blokova_naredbi.equals(counting.getBlokova_naredbi()) && poziva_funkcija.equals(counting.getPoziva_funkcija())
+				&& instanciranja.equals(counting.getInstanciranja()) && metoda.equals(counting.getMetoda())
+				&& atributa.equals(counting.getAtributa()) && izvodjenja.equals(counting.getIzvodjenja())) {
 			result = true;
 		}
 
