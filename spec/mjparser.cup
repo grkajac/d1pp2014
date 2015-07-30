@@ -789,7 +789,7 @@ non terminal MethodDecl, MethodDeclList, MethodDeclPart;
 non terminal MethodVarDeclList, LocalVarDecl_Semi_Recovery, LocalVarDecl_Lbrace_Recovery;
 non terminal M_VarList;
 non terminal FormPars, ActualPars, ActualParamList, ActualPars_Rparen_Recovery;
-non terminal FormPars_Recovery, FormalParamDecl_Comma_Recovery, FormalParamDecl_Rparen_Recovery;
+non terminal FormParsList, FormParamPart_Comma, FormParamPart_Rparen;
 non terminal FormalParamType;
 non terminal AllStatements, StatementList, Statement;
 non terminal Unmatched, Matched, WhileBreak;
@@ -1075,7 +1075,11 @@ MethodName ::= MethodRetType:retType IDENT:methName
                     parser.insertThisParam(scope, var);
                 :};
 
-MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_Recovery AllStatements RBRACE
+MethodDeclPart ::= MethodName:methName FormPars 
+				   {:
+                 		var = VarNode.METHOD_LOCAL_VAR;
+             	   :} 
+             	   MethodVarDeclLB_Recovery AllStatements RBRACE
                    {:
 
                       if(!TabUtils.isMethodExist) {
@@ -1093,7 +1097,11 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
                       Tab.closeScope();
                    :}
                    |
-                   ABSTRACT MethodName:methName LPAREN FormPars_Recovery SEMI
+                   ABSTRACT MethodName:methName FormPars
+                   {:
+                 		var = VarNode.METHOD_LOCAL_VAR;
+             	   :} 
+             	   SEMI
                    {:
                      if(!scope.equals(ScopeNode.ABSTRACT_CLASS)){
                          parser.report_error(SemanticErrorDesc.S2_18.print(methNameleft), null);
@@ -1115,6 +1123,35 @@ MethodDeclPart ::= MethodName:methName LPAREN FormPars_Recovery MethodVarDeclLB_
 
                      Tab.closeScope();
                    :};
+
+
+// ---------------------- FORM PARAMS --------------------------
+
+FormPars ::= LPAREN FormParsList
+             |
+             LPAREN RPAREN;
+
+FormParsList ::= FormParamPart_Comma FormParsList
+			     |
+			 	 FormParamPart_Rparen;
+
+FormParamPart_Comma ::= FormalParamType VarPart COMMA
+                      |
+                      error COMMA:l
+                      {:
+                          parser.report_error(SintaxErrorDesc.S1_09.print(lleft), null);
+                      :};
+
+FormParamPart_Rparen ::= FormalParamType VarPart RPAREN
+					   |
+                       error RPAREN:l
+                       {:
+                           parser.report_error(SintaxErrorDesc.S1_10.print(lleft), null);
+                       :};
+
+FormalParamType ::= Type:typeName {: TabUtils.currentVarType = typeName; :};
+
+// ---------------------- METHOD LOCAL VARS --------------------------
 
 MethodVarDeclLB_Recovery ::= MethodVarDeclList:m
                              {:
@@ -1156,40 +1193,6 @@ M_VarList ::= M_VarList COMMA VarPart
               |
               VarPart;
 
-// ---------------------- FORM PARAMS --------------------------
-
-FormPars_Recovery ::= FormPars
-                      {:
-                          var = VarNode.METHOD_LOCAL_VAR;
-                      :}
-                      |
-                      RPAREN
-                      {:
-                          var = VarNode.METHOD_LOCAL_VAR;
-                      :};
-
-FormPars ::= FormalParamDecl_Comma_Recovery FormPars
-					|
-			 FormalParamDecl_Rparen_Recovery;
-
-FormalParamDecl_Comma_Recovery ::= FormalParamType VarPart COMMA
-                                   |
-                                   error COMMA:l
-                                   {:
-                                       parser.report_error(SintaxErrorDesc.S1_09.print(lleft), null);
-                                   :};
-
-FormalParamDecl_Rparen_Recovery ::= FormalParamType VarPart RPAREN
-									|
-                                    error RPAREN:l
-                                    {:
-                                        parser.report_error(SintaxErrorDesc.S1_10.print(lleft), null);
-                                    :};
-
-FormalParamType ::= Type:typeName
-                    {:
-                        TabUtils.currentVarType = typeName;
-                    :};
 
 // ---------------------- STATEMENTS --------------------------
 
