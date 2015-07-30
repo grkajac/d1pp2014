@@ -761,10 +761,8 @@ init with {:
 :}
 
 action code {:
-
     ScopeNode scope = ScopeNode.GLOBAL;
     VarNode var = VarNode.GLOBAL_VAR;
-    ConstNode con = ConstNode.NUMBER;
 :}
 
 terminal PROG, CONST, VOID, ABSTRACT, CLASS, EXTENDS, NEW;
@@ -817,22 +815,13 @@ Program ::= PROG ProgBegin:p GlobalDeclaration LBRACE MethodDecl RBRACE
 
                 Tab.chainLocalSymbols(p);
                 Tab.closeScope();
-            :}
-            |
-            PROG ProgBegin:p GlobalDeclaration LBRACE  RBRACE
-            {:
-                Code.dataSize = Tab.currentScope().getnVars();
-
-                Tab.chainLocalSymbols(p);
-                parser.report_error(SemanticErrorDesc.S2_00.print(), null);
-                Tab.closeScope();
             :};
 
-ProgBegin ::=  IDENT:id
-                {:
-                    RESULT = Tab.insert(Obj.Prog, id, Tab.noType);
-                    Tab.openScope();
-                :};
+ProgBegin ::= IDENT:id
+              {:
+                  RESULT = Tab.insert(Obj.Prog, id, Tab.noType);
+                  Tab.openScope();
+              :};
 
 GlobalDeclaration ::=  GlobalDeclList
                         |
@@ -840,7 +829,7 @@ GlobalDeclaration ::=  GlobalDeclList
 
 GlobalDeclList ::= GlobalDeclList GlobalDeclPart
 				   |
-				   GlobalDeclPart ;
+				   GlobalDeclPart;
 
 GlobalDeclPart ::=  ConstDecl
                     |
@@ -879,32 +868,25 @@ ConstDeclList ::= ConstDeclList COMMA ConstDeclPart
 
 ConstDeclPart ::= IDENT:id EQUAL NUMBER:num
                   {:
-                    con = ConstNode.NUMBER;
-                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
-
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, ConstNode.NUMBER);
                     konstanta.setAdr(num.intValue());
                   :}
                   |
                   IDENT:id EQUAL CHARCONST:ch
                   {:
-                    con = ConstNode.CHAR;
-                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
-
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, ConstNode.CHAR);
                     konstanta.setAdr(ch.charValue());
                   :}
                   |
                   IDENT:id EQUAL BOOLVAL:bool
                   {:
-                    con = ConstNode.BOOL;
-                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
-
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, ConstNode.BOOL);
                     konstanta.setAdr((bool == true) ? 1 : 0);
                   :}
                   |
                   IDENT:id EQUAL STRING_LITERAL:str
                   {:
-                    con = ConstNode.STRING;
-                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, con);
+                    Obj konstanta = parser.constantProcessing(id, idleft, TabUtils.currentVarType, ConstNode.STRING);
 
                     //konstanta.setAdr(str.length());
                     //Code.load(konstanta);
@@ -1051,14 +1033,16 @@ C_VarDecl ::=  Type:typeName
 C_VarList ::= C_VarList COMMA VarPart
               |
               VarPart;
-
+              
 ClassMethodDecl ::= LBRACE MethodDecl RBRACE
 					|
 					/* epsilon */;
 
 // ---------------------- METHOD DECL --------------------------
 
-MethodDecl ::= MethodDeclList;
+MethodDecl ::= MethodDeclList
+			   |
+			   /* epsilon */;
 
 MethodDeclList ::= MethodDeclList MethodDeclPart
                    |
