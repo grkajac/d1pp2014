@@ -283,7 +283,7 @@
             "glob_promenljivih": 3,
             "glob_nizova": 0,
             "funkcija": 1,
-            "un_klasa": 6,
+            "un_klasa": 4,
             "blokova_naredbi": 0,
             "poziva_funkcija": 4,
             "instanciranja": 6,
@@ -292,8 +292,7 @@
             "izvodjenja": 2
         },
         "syntaxErrorList": [
-            { "line": 32, "description": "S1-12" },
-            { "line": 71, "description": "S1-05" }
+            { "line": 32, "description": "S1-12" }
         ],
         "semanticErrorList": [
             { "line": 12, "description": "S2-20" },
@@ -324,15 +323,15 @@
 
             { "line": 0, "description": "S2-16" },
 
-            { "line": 81, "description": "S2-20" },
+            { "line": 68, "description": "S2-20" },
 
-            { "line": 85, "description": "S2-47" },
-            { "line": 85, "description": "S2-47" },
+            { "line": 72, "description": "S2-47" },
+            { "line": 72, "description": "S2-47" },
 
-            { "line": 88, "description": "S2-31" },
+            { "line": 75, "description": "S2-31" },
 
-            { "line": 90, "description": "S2-30" },
-            { "line": 90, "description": "S2-30" }
+            { "line": 77, "description": "S2-30" },
+            { "line": 77, "description": "S2-30" }
         ]
     },
     {
@@ -379,7 +378,7 @@
             "glob_promenljivih": 3,
             "glob_nizova": 0,
             "funkcija": 4,
-            "un_klasa": 0,
+            "un_klasa": 2,
             "blokova_naredbi": 0,
             "poziva_funkcija": 1,
             "instanciranja": 0,
@@ -391,16 +390,18 @@
             { "line": 5, "description": "S1-02" },
             { "line": 6, "description": "S1-03" },
             
-            { "line": 17, "description": "S1-07" },
-            { "line": 22, "description": "S1-09" },
+            { "line": 15, "description": "S1-05" },
             
-            { "line": 28, "description": "S1-13" },
-            { "line": 29, "description": "S1-14" }
+            { "line": 30, "description": "S1-07" },
+            { "line": 35, "description": "S1-09" },
+            
+            { "line": 41, "description": "S1-13" },
+            { "line": 42, "description": "S1-14" }
         ],
         "semanticErrorList": [
-            { "line": 23, "description": "S2-23" },
+            { "line": 36, "description": "S2-23" },
             { "line": 0, "description": "S2-17" },
-            { "line": 29, "description": "S2-26" }
+            { "line": 42, "description": "S2-26" }
         ]
     },
     {

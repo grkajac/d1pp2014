@@ -61,19 +61,6 @@ class Delta{
 	}
 }
 
-class Aca {
-    int aca = 1                              // sintaksna oporavak do }
-    {
-       bool acaTest(){                      // ne broji se zbog greske iznad
-            print("test" + "i" + "aca");    // semanticka, fali return
-        }
-    }
-}
-
-class Maca {
-
-}
-
 {
 	void main() Alfa a1, a2; Beta b; Gama g; Delta d;{
 		a1 = new Alfa;
