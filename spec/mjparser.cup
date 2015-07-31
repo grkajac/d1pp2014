@@ -168,7 +168,7 @@ parser code {:
            return;
         }
 		
-		// Provera samo za trenutni opseg, ostali opsezi mogu sadrzati promenljive istog imena
+		// Provera samo za trenutni opseg, ostali opsezi mogu sadrzati promenljive istog imena.
         Obj promenljiva = Tab.currentScope().findSymbol(id);
 
 		// Provera da li je promenljiva vec definisana
@@ -355,7 +355,6 @@ parser code {:
        return obj;
     }
 
-	// TODO
     public Obj getClassDesignator(Obj classObj, String name, int nameleft) {
 
         if(classObj.getType().getKind() != Struct.Class) {
@@ -532,8 +531,9 @@ parser code {:
         return func.getType();
     }
 
-    // dozvoljeno samo za uslove ge, gt, le, lt
-    public boolean checkRefTypeOperator(Struct exp1, Struct exp2, int op) {
+    // Uz promenljive tipa klase ili niza, od relacionih operatora, mogu se koristiti samo != i ==.
+    public boolean checkRefTypeViolation(Struct exp1, Struct exp2, int op) {
+
         return (exp1.isRefType() && exp2.isRefType() && op != 0 && op != 1) ? true : false;
     }
 
@@ -543,7 +543,7 @@ parser code {:
            report_error(SemanticErrorDesc.S2_30.print(exp1left), null);
         }
 
-        if(checkRefTypeOperator(exp1, exp2, op)) {
+        if(checkRefTypeViolation(exp1, exp2, op)) {
            report_error(SemanticErrorDesc.S2_31.print(exp1left), null);
         }
     }
@@ -788,7 +788,7 @@ non terminal ClassMethodDecl, C_VarDecl, C_VarList;
 non terminal MethodDecl, MethodDeclList, MethodDeclPart;
 non terminal MethodVarDeclList, LocalVarDecl_Semi_Recovery, LocalVarDecl_Lbrace_Recovery;
 non terminal M_VarList;
-non terminal FormPars, ActualPars, ActualParamList, ActualPars_Rparen_Recovery;
+non terminal FormPars, ActualPars, ActualParamList, ActPars_Rparen;
 non terminal FormParsList, FormParamPart_Comma, FormParamPart_Rparen;
 non terminal FormalParamType;
 non terminal AllStatements, StatementList, Statement;
@@ -1323,7 +1323,7 @@ FuncCalls ::= READ LPAREN Designator:d RPAREN SEMI
                     parser.checkPrint(e, eleft, n);
               :}
               |
-              ProgramFunc:func ActualPars_Rparen_Recovery:ap SEMI
+              ProgramFunc:func ActPars_Rparen:ap SEMI
               {:
                    RESULT = parser.checkFunc(func, funcleft, scope);
               :}
@@ -1341,8 +1341,8 @@ ProgramFunc ::= Designator:d LPAREN
                 :};
 
 Condition ::= CondTerm OR Condition
-               |
-               CondTerm;
+              |
+              CondTerm;
 
 CondTerm ::= CondFact AND CondTerm
              |
@@ -1396,7 +1396,25 @@ Factor_list ::= Factor_list:fl Mulop:op Factor:ff
                     RESULT = f;
                 :};
 
-Factor ::= NUMBER:n
+Factor ::= Designator:d
+           {:
+               Code.load(d);
+
+               if(d.getType() == null) {
+
+                    RESULT = Tab.noType;
+               } else {
+
+                    RESULT = d.getType();
+               }
+           :}
+           |
+           ProgramFunc:func ActPars_Rparen:ap
+           {:
+               RESULT = parser.checkFunc(func, funcleft, scope);
+           :}
+           |
+		   NUMBER:n
            {:
               Obj num = Tab.insert(Obj.Con, "NUMBER", Tab.intType);
               num.setAdr(n.intValue());
@@ -1412,11 +1430,6 @@ Factor ::= NUMBER:n
                Code.load(ch);
 
                RESULT = Tab.charType;
-           :}
-           |
-           LPAREN Expr:e RPAREN
-           {:
-               RESULT = e;
            :}
            |
            BOOLVAL:b
@@ -1452,30 +1465,17 @@ Factor ::= NUMBER:n
                RESULT =  parser.newTypeStat(id, idleft);
            :}
            |
-           Designator:d
+           LPAREN Expr:e RPAREN
            {:
-               Code.load(d);
-
-               if(d.getType() == null) {
-
-                    RESULT = Tab.noType;
-               } else {
-
-                    RESULT = d.getType();
-               }
-           :}
-           |
-           ProgramFunc:func ActualPars_Rparen_Recovery:ap
-           {:
-               RESULT = parser.checkFunc(func, funcleft, scope);
+               RESULT = e;
            :};
 
-ActualPars_Rparen_Recovery ::= ActualPars RPAREN
-                               |
-                               error RPAREN:l
-                               {:
-                                  parser.report_error(SintaxErrorDesc.S1_14.print(lleft), null);
-                               :};
+ActPars_Rparen ::= ActualPars RPAREN
+                   |
+                   error RPAREN:l
+                   {:
+                      parser.report_error(SintaxErrorDesc.S1_14.print(lleft), null);
+                   :};
 
 ActualPars ::= ActualParamList
 			   |
