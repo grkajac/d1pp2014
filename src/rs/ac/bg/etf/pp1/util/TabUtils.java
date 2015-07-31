@@ -3,12 +3,16 @@ package rs.ac.bg.etf.pp1.util;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.log4j.Logger;
+
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
+import rs.etf.pp1.symboltable.concepts.Scope;
 import rs.etf.pp1.symboltable.concepts.Struct;
 import rs.etf.pp1.symboltable.structure.HashTableDataStructure;
 import rs.etf.pp1.symboltable.structure.SymbolDataStructure;
 import rs.etf.pp1.symboltable.visitors.DumpSymbolTableVisitor;
+import rs.etf.pp1.symboltable.visitors.SymbolTableVisitor;
 
 /**
  * Created with IntelliJ IDEA. 
@@ -279,5 +283,18 @@ public class TabUtils {
 				methodObj.setLocals(currentLocals);
 			}
 		}
+	}
+
+	public static void dump(Logger log) {
+
+		log.info("=====================SYMBOL TABLE DUMP=========================");
+
+		SymbolTableVisitor stv = new DumpSymbolTableVisitor();
+
+		for (Scope s = Tab.currentScope; s != null; s = s.getOuter()) {
+			s.accept(stv);
+		}
+
+		log.info(stv.getOutput());
 	}
 }

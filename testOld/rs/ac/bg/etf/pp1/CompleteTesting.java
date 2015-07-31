@@ -10,7 +10,7 @@ import java_cup.runtime.Symbol;
 
 import org.apache.log4j.Logger;
 
-import rs.etf.pp1.symboltable.Tab;
+import rs.ac.bg.etf.pp1.util.TabUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -61,8 +61,7 @@ public class CompleteTesting implements Testing {
 				log.info("Broj izvodjenja klasa = " + p.extendingClassesCount);
 
 				// Level III
-
-				Tab.dump();
+				TabUtils.dump(log);
 
 				if (!p.errorDetected) {
 					log.info("Parsiranje USPESNO zavrseno :)");

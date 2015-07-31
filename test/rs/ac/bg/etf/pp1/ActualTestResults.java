@@ -195,8 +195,7 @@ public class ActualTestResults {
 			testCounts.setIzvodjenja(p.extendingClassesCount);
 
 			// Level III
-
-			// Tab.dump();
+			TabUtils.dump(log);
 
 			if (!p.errorDetected) {
 
