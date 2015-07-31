@@ -2,7 +2,7 @@
     {
         "name": "test01.mj",
         "counting": {
-            "glob_promenljivih": 7,
+            "glob_promenljivih": 0,
             "glob_nizova": 0,
             "funkcija": 1,
             "un_klasa": 0,
@@ -19,7 +19,7 @@
     {
         "name": "test02.mj",
         "counting": {
-            "glob_promenljivih": 3,
+            "glob_promenljivih": 0,
             "glob_nizova": 0,
             "funkcija": 1,
             "un_klasa": 0,
@@ -60,7 +60,7 @@
     {
         "name": "test03.mj",
         "counting": {
-            "glob_promenljivih": 3,
+            "glob_promenljivih": 1,
             "glob_nizova": 0,
             "funkcija": 1,
             "un_klasa": 0,
@@ -83,7 +83,7 @@
     {
         "name": "test04.mj",
         "counting": {
-            "glob_promenljivih": 4,
+            "glob_promenljivih": 0,
             "glob_nizova": 1,
             "funkcija": 2,
             "un_klasa": 0,
@@ -100,7 +100,7 @@
     {
         "name": "test05.mj",
         "counting": {
-            "glob_promenljivih": 9,
+            "glob_promenljivih": 1,
             "glob_nizova": 0,
             "funkcija": 6,
             "un_klasa": 0,
@@ -176,7 +176,7 @@
     {
         "name": "test06.mj",
         "counting": {
-            "glob_promenljivih": 3,
+            "glob_promenljivih": 1,
             "glob_nizova": 4,
             "funkcija": 1,
             "un_klasa": 0,
@@ -209,7 +209,7 @@
     {
         "name": "test07.mj",
         "counting": {
-            "glob_promenljivih": 2,
+            "glob_promenljivih": 0,
             "glob_nizova": 1,
             "funkcija": 7,
             "un_klasa": 1,
@@ -226,7 +226,7 @@
     {
         "name": "test08.mj",
         "counting": {
-            "glob_promenljivih": 1,
+            "glob_promenljivih": 0,
             "glob_nizova": 0,
             "funkcija": 1,
             "un_klasa": 3,
@@ -280,7 +280,7 @@
     {
         "name": "test09.mj",
         "counting": {
-            "glob_promenljivih": 3,
+            "glob_promenljivih": 1,
             "glob_nizova": 0,
             "funkcija": 1,
             "un_klasa": 4,
@@ -375,7 +375,7 @@
     {
         "name": "test12.mj",
         "counting": {
-            "glob_promenljivih": 3,
+            "glob_promenljivih": 1,
             "glob_nizova": 0,
             "funkcija": 4,
             "un_klasa": 2,
@@ -407,7 +407,7 @@
     {
         "name": "test301.mj",
         "counting": {
-            "glob_promenljivih": 2,
+            "glob_promenljivih": 1,
             "glob_nizova": 2,
             "funkcija": 1,
             "un_klasa": 0,
@@ -424,7 +424,7 @@
     {
         "name": "test302.mj",
         "counting": {
-            "glob_promenljivih": 4,
+            "glob_promenljivih": 0,
             "glob_nizova": 1,
             "funkcija": 3,
             "un_klasa": 0,
@@ -441,7 +441,7 @@
     {
         "name": "test303.mj",
         "counting": {
-            "glob_promenljivih": 1,
+            "glob_promenljivih": 0,
             "glob_nizova": 0,
             "funkcija": 3,
             "un_klasa": 3,

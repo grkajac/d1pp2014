@@ -25,7 +25,7 @@ public class TestComparingUtils {
 
 	public static void isEqual(Counting actual, Counting expected) {
 
-		assertEquals("Broj deklaracija globalnih promenljivih prostog tipa = ", expected.getGlob_promenljivih(),
+		assertEquals("Broj deklaracija globalnih promenljivih znakovnog tipa = ", expected.getGlob_promenljivih(),
 				actual.getGlob_promenljivih());
 
 		assertEquals("Broj deklaracija globalnih nizova = ", expected.getGlob_nizova(), actual.getGlob_nizova());

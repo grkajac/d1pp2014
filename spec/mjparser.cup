@@ -3,8 +3,6 @@ package rs.ac.bg.etf.pp1;
 import java_cup.runtime.*;
 import org.apache.log4j.*;
 
-// import java.io.*;
-
 import rs.ac.bg.etf.pp1.domain.*;
 import rs.ac.bg.etf.pp1.util.*;
 
@@ -15,11 +13,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-
 parser code {:
 
 	// counting declarations vars
-	int globalPrimitiveVarsCount = 0;
+	int globalCharVarCount = 0;
 	int globalArraysCount = 0;
 
     // counting definitions vars
@@ -51,7 +48,7 @@ parser code {:
     }
 
     public void syntax_error(Symbol cur_token) {
-        //report_error("\nSintaksna greska", cur_token);
+        // report_error("\nSintaksna greska", cur_token);
     }
 
     public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
@@ -76,7 +73,6 @@ parser code {:
     /*
      * util functions
      */
-     
      public Struct getType(String typeName, int typeNameleft) {
      
      	Obj typeNode = Tab.find(typeName);
@@ -181,7 +177,10 @@ parser code {:
 		if(VarNode.GLOBAL_VAR.equals(node)) {
 			
 			Obj prom = Tab.insert(Obj.Var, id, type);
-            globalPrimitiveVarsCount++;
+            
+            if(Struct.Char == type.getKind()) {
+	            globalCharVarCount++;
+            }
             report_info("Nadjena globalna promenljiva na liniji " + idleft + " | " + TabUtils.printObj(prom), null);
 		}
 
@@ -352,6 +351,11 @@ parser code {:
 		   report_error(SemanticErrorDesc.S2_42.print(nameleft, name), null);
 		   return Tab.noObj;
 	   }
+	   
+       if(Obj.Meth == obj.getKind()) {
+           report_info("Poziv globalne funkcije na liniji " + nameleft + " | " + TabUtils.printObj(obj), null);
+       } 
+
        return obj;
     }
 
@@ -368,6 +372,10 @@ parser code {:
            report_error(SemanticErrorDesc.S2_46.print(nameleft, name), null);
            return Tab.noObj;
         }
+       	   
+        if(Obj.Meth == result.getKind()) {
+            report_info("Poziv metode un.klase na liniji " + nameleft + " | " + TabUtils.printObj(result), null);
+        } 
        
         return result;
     }
@@ -519,15 +527,6 @@ parser code {:
            functionCallsInMainCount++;
         }
 
-		// TODO
-        if(ScopeNode.GLOBAL.equals(scope)) {
-            report_info("Poziv globalne funkcije na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
-        } 
-        
-		if(ScopeNode.CLASS.equals(scope)) {
-            report_info("Poziv metode un.klase na liniji " + funcleft + " | " + TabUtils.printObj(func), null);
-        }
-        
         return func.getType();
     }
 
@@ -745,8 +744,8 @@ parser code {:
 
 scan with {:
 	Symbol s = this.getScanner().next_token();
-	//if (s != null && s.value != null)
-	//	log.info(s.toString() + " " + s.value.toString());
+	// if (s != null && s.value != null)
+	// 	log.info(s.toString() + " " + s.value.toString());
 	return s;
 :}
 

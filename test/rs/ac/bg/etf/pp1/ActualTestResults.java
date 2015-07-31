@@ -164,8 +164,8 @@ public class ActualTestResults {
 
 			Counting testCounts = currentTest.getCounting();
 
-			log.info("Broj deklaracija globalnih promenljivih prostog tipa = " + p.globalPrimitiveVarsCount);
-			testCounts.setGlob_promenljivih(p.globalPrimitiveVarsCount);
+			log.info("Broj deklaracija globalnih promenljivih znakovnog tipa = " + p.globalCharVarCount);
+			testCounts.setGlob_promenljivih(p.globalCharVarCount);
 
 			log.info("Broj deklaracija globalnih nizova = " + p.globalArraysCount);
 			testCounts.setGlob_nizova(p.globalArraysCount);

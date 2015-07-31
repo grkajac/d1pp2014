@@ -10,7 +10,6 @@ import java_cup.runtime.Symbol;
 
 import org.apache.log4j.Logger;
 
-import rs.ac.bg.etf.pp1.MJParser;
 import rs.etf.pp1.symboltable.Tab;
 
 /**
@@ -50,7 +49,7 @@ public class CompleteTesting implements Testing {
 				Symbol s = p.parse(); // pocetak parsiranja
 
 				// Level II
-				log.info("Broj deklaracija globalnih promenljivih prostog tipa = " + p.globalPrimitiveVarsCount);
+				log.info("Broj deklaracija globalnih promenljivih znakovnog tipa = " + p.globalCharVarCount);
 				log.info("Broj deklaracija globalnih nizova = " + p.globalArraysCount);
 				log.info("Broj definicija funkcija u glavnom programu = " + p.globalFunctionsCount);
 				log.info("Broj definicija unutrašnjih klasa = " + p.innerClassesCount);
