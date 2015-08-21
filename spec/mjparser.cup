@@ -1462,6 +1462,8 @@ Factor ::= Designator:d
            {:
                parser.objectCreationCount++;
                RESULT =  parser.newTypeStat(id, idleft);
+               
+               Code.put(Code.new_);
            :}
            |
            LPAREN Expr:e RPAREN
@@ -1484,14 +1486,14 @@ ActualParamList ::= ActualParamList COMMA Expr:e
                     {:
                        TabUtils.actualParams.add(e);
                        // TODO
-                       // Code.put(Code.pop); // stvarni parametri nisu implementirani, pa da ne ostanu na steku
+                       Code.put(Code.pop); // stvarni parametri nisu implementirani, pa da ne ostanu na steku
                     :}
 					|
 					Expr:e
 					{:
                        TabUtils.actualParams.add(e);
                        // TODO
-                       //Code.put(Code.pop); // stvarni parametri nisu implementirani, pa da ne ostanu na steku
+                       Code.put(Code.pop); // stvarni parametri nisu implementirani, pa da ne ostanu na steku
 					:};
 
 Designator ::= DesignatorList:d 
@@ -1500,20 +1502,23 @@ Designator ::= DesignatorList:d
 			   :};
 
 
-DesignatorList ::=  DesignatorList:d ExprInSquaresRS_Recovery:exSqr
+DesignatorList ::=  DesignatorList:d
                     {:
                         if(d.getType().getKind() != Struct.Array) {
 
-                            parser.report_error(SemanticErrorDesc.S2_44.print(exSqrleft), null);
+                            parser.report_error(SemanticErrorDesc.S2_44.print(dleft), null);
                             RESULT = Tab.noObj;
                         } else {
 
+							Code.load(d);
                             RESULT = new Obj(Obj.Elem, "Elem", d.getType().getElemType());
                         }
-                    :}
+                    :} 
+                    ExprInSquaresRS_Recovery:exSqr
                     |
                     DesignatorList:d DOT IDENT:name
                     {:
+                    	Code.load(d);
 						RESULT = parser.getClassDesignator(d, name, nameleft);
                     :}
                     |

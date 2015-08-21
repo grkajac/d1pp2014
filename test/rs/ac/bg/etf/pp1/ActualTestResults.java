@@ -26,6 +26,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 import rs.ac.bg.etf.pp1.testing.dto.Counting;
 import rs.ac.bg.etf.pp1.testing.dto.GrammarError;
 import rs.ac.bg.etf.pp1.testing.dto.TestResult;
+import rs.ac.bg.etf.pp1.util.CodeUtils;
 import rs.ac.bg.etf.pp1.util.Log4JUtils;
 import rs.ac.bg.etf.pp1.util.TabUtils;
 import rs.etf.pp1.mj.runtime.Code;
@@ -94,6 +95,8 @@ public class ActualTestResults {
 		for (File testFile : testFiles) {
 
 			clearLogFile(new File(CURRENT_PARSED_TEST_PATH));
+
+			CodeUtils.resetCodeData();
 
 			startTest(testFile);
 
@@ -198,20 +201,24 @@ public class ActualTestResults {
 			TabUtils.dump(log);
 
 			if (!p.errorDetected) {
-
 				log.info("Parsiranje USPESNO zavrseno :)");
-
-				if (testFile.getName().matches("test\\d{3}\\.mj")) {
-
-					File codeGenFile = new File(GENERATED_CODE_TEST_PATH + "/" + testFile.getName() + ".obj");
-
-					Code.write(new FileOutputStream(codeGenFile));
-				}
-
 			} else {
-
 				log.error("Parsiranje ima GRESKE :(");
 			}
+
+			if (testFile.getName().matches("test\\d{3}\\.mj") && !Code.greska) {
+
+				File codeGenFile = new File(GENERATED_CODE_TEST_PATH + "/" + testFile.getName() + ".obj");
+
+				Code.write(new FileOutputStream(codeGenFile));
+
+				log.info("Generisanje .mj.obj fajla USPESNO zavrseno :)");
+			}
+
+			if (Code.greska) {
+				log.info("Generisanje .mj.obj fajla NEUSPESNO zavrseno :(");
+			}
+
 			log.info("\n======================================================\n");
 
 		} catch (Exception e) {

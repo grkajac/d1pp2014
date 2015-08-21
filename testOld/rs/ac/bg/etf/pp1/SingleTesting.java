@@ -2,6 +2,7 @@ package rs.ac.bg.etf.pp1;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -12,6 +13,7 @@ import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
 
 import rs.ac.bg.etf.pp1.util.TabUtils;
+import rs.etf.pp1.mj.runtime.Code;
 
 /**
  * Created with IntelliJ IDEA. User: Aleksandar Grkajac ga040202d@student.etf.rs , aleksa888@gmail.com Date: 1/21/14 Time: 8:27 PM To change
@@ -80,6 +82,20 @@ public class SingleTesting implements Testing {
 					} else {
 						log.error("Parsiranje ima GRESKE :(");
 					}
+
+					if (sourceCode.getName().matches("test\\d{3}\\.mj") && !Code.greska) {
+
+						File codeGenFile = new File(ActualTestResults.GENERATED_CODE_TEST_PATH + "/" + sourceCode.getName() + ".obj");
+
+						Code.write(new FileOutputStream(codeGenFile));
+
+						log.info("Generisanje .mj.obj fajla USPESNO zavrseno :)");
+					}
+
+					if (Code.greska) {
+						log.info("Generisanje .mj.obj fajla NEUSPESNO zavrseno :(");
+					}
+
 					log.info("\n==================== " + sourceCode.getAbsolutePath() + " ==================================");
 				}
 			}
