@@ -8,8 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +24,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 import rs.ac.bg.etf.pp1.testing.dto.Counting;
 import rs.ac.bg.etf.pp1.testing.dto.GrammarError;
 import rs.ac.bg.etf.pp1.testing.dto.TestResult;
+import rs.ac.bg.etf.pp1.testing.utils.FileUtils;
 import rs.ac.bg.etf.pp1.util.CodeUtils;
 import rs.ac.bg.etf.pp1.util.Log4JUtils;
 import rs.ac.bg.etf.pp1.util.TabUtils;
@@ -38,27 +37,24 @@ import rs.etf.pp1.mj.runtime.Code;
  */
 public class ActualTestResults {
 
-	public static final String TEST_PATH = "test/kojini_testovi";
-	public static final String CURRENT_PARSED_TEST_PATH = "logs/testResult.log";
-	public static final String PARSED_TESTS_SINGLE_LOG_PATH = "logs/test";
-	public static final String GENERATED_CODE_TEST_PATH = "logs/generatedcode";
-
 	private static List<File> testFiles = new ArrayList<>();
 	private static Map<String, TestResult> results = new HashMap<>();
 
 	private static TestResult currentTest;
-	private static Pattern errorTagPattern = Pattern.compile("\\[(\\w{2}-\\d{2})\\]( na liniji (\\d+))?|(test\\d{2,3}\\.mj)");
+	private static Pattern errorTagPattern;
 
 	static {
 
 		DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());
 
 		Log4JUtils.instance().prepareLogTestResultFile(Logger.getRootLogger());
+
+		errorTagPattern = Pattern.compile(FileUtils.CONFIG.getProperty("errorTagRegex"));
 	}
 
 	public static Map<String, TestResult> getResults() {
 
-		readTestFiles(new File(TEST_PATH));
+		readTestFiles(FileUtils.getTestFolder());
 
 		parseResults();
 
@@ -87,14 +83,14 @@ public class ActualTestResults {
 	private static void parseResults() {
 
 		// Clearing logs for all tests, each test contains single log for itself.
-		clearAllTestSingleLog(new File(PARSED_TESTS_SINGLE_LOG_PATH));
+		clearTestsLog(FileUtils.getParsedTestFolder());
 
 		// Clearing same thing for test that is used for generating code.
-		clearAllTestSingleLog(new File(GENERATED_CODE_TEST_PATH));
+		clearTestsLog(FileUtils.getGeneratedCodeFolder());
 
 		for (File testFile : testFiles) {
 
-			clearLogFile(new File(CURRENT_PARSED_TEST_PATH));
+			clearLogFile(FileUtils.getCurrentParsedTestFile());
 
 			CodeUtils.resetCodeData();
 
@@ -130,7 +126,7 @@ public class ActualTestResults {
 		}
 	}
 
-	private static void clearAllTestSingleLog(final File testLogsFolder) {
+	private static void clearTestsLog(final File testLogsFolder) {
 
 		for (final File fileEntry : testLogsFolder.listFiles()) {
 
@@ -208,7 +204,7 @@ public class ActualTestResults {
 
 			if (testFile.getName().matches("test\\d{3}\\.mj") && !Code.greska) {
 
-				File codeGenFile = new File(GENERATED_CODE_TEST_PATH + "/" + testFile.getName() + ".obj");
+				File codeGenFile = FileUtils.createGeneratedCodeFile(testFile.getName() + ".obj");
 
 				Code.write(new FileOutputStream(codeGenFile));
 
@@ -256,7 +252,7 @@ public class ActualTestResults {
 
 		try {
 
-			scanner = new Scanner(new File(CURRENT_PARSED_TEST_PATH));
+			scanner = new Scanner(FileUtils.getCurrentParsedTestFile());
 
 			String line;
 			Matcher matcher = null;
@@ -275,8 +271,7 @@ public class ActualTestResults {
 				}
 			}
 
-			Files.copy(new File(CURRENT_PARSED_TEST_PATH).toPath(), new File(PARSED_TESTS_SINGLE_LOG_PATH + "/" + currentTest.getName()
-					+ ".log").toPath(), StandardCopyOption.REPLACE_EXISTING);
+			FileUtils.copyTempLogToCurrentTestLog(currentTest.getName() + ".log");
 
 		} catch (Exception e) {
 
@@ -293,7 +288,7 @@ public class ActualTestResults {
 
 				} catch (Exception e1) {
 
-					System.out.println("GrammarError u citanju " + CURRENT_PARSED_TEST_PATH);
+					System.out.println("GrammarError u citanju " + FileUtils.getCurrentParsedTestFile());
 				}
 			}
 		}

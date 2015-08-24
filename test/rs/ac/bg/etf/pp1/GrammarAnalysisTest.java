@@ -2,7 +2,6 @@ package rs.ac.bg.etf.pp1;
 
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,24 +18,15 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import rs.ac.bg.etf.pp1.testing.dto.TestResult;
+import rs.ac.bg.etf.pp1.testing.utils.FileUtils;
 import rs.ac.bg.etf.pp1.testing.utils.TestComparingUtils;
 
-
 /**
- * Created with IntelliJ IDEA.
- * User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com
- * Date: 1/21/14
- * Time: 11:06 PM
- * To change this template use File | Settings | File Templates.
- * visit
+ * Created with IntelliJ IDEA. User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com Date: 1/21/14 Time: 11:06 PM To change
+ * this template use File | Settings | File Templates. visit
  */
 @RunWith(Parameterized.class)
 public class GrammarAnalysisTest {
-
-	/**
-	 * Naziv fajla u kome su rezultati testova koje ocekujemo da su ispravni. Sadrzi listu parametara za svaki test u json formatu.
-	 */
-	private static final String EXPECTED_TEST_RESULTS_FILE_PATH = "config/testing.json";
 
 	/**
 	 * Lista ocekivanih rezultata testova.
@@ -82,7 +72,7 @@ public class GrammarAnalysisTest {
 		try {
 
 			// read from file, and convert to the user object
-			expectedTestResultList = mapper.readValue(new File(EXPECTED_TEST_RESULTS_FILE_PATH), new TypeReference<List<TestResult>>() {
+			expectedTestResultList = mapper.readValue(FileUtils.getExpectedTestResultConfigFile(), new TypeReference<List<TestResult>>() {
 			});
 
 		} catch (JsonGenerationException | JsonMappingException e) {
