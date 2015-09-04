@@ -34,7 +34,7 @@ public class MJParserTest {
 
 			System.out.println("Example 01 ");
 			System.out.println("Example: 01 09 ");
-			System.out.print("Unesi broj test/testova:  ");
+			System.out.print("Unesi broj test(ova)? :  ");
 
 			String input = new Scanner(System.in).nextLine();
 			String[] numberOfFile = input.split(" ");

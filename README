@@ -24,6 +24,7 @@
        and list of values obtained from actual parser outputs.
        
        
+0. clean project
 
 1. generisanje lexer-a
 
@@ -43,12 +44,12 @@
 4. Codeout
 
 	main: rs.etf.pp1.mj.runtime.Run
-	args: -debug logs-generatedcode/test301.mj.obj
+	args: -debug logs/generatedcode/test301.mj.obj
 
 5. Disasm
 
 	main: rs.etf.pp1.mj.runtime.disasm
-	args: logs-generatedcode/test301.mj.obj
+	args: log/generatedcode/test301.mj.obj
 
 JUNIT
 
