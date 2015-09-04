@@ -21,13 +21,13 @@ import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
-import rs.ac.bg.etf.pp1.testing.dto.Counting;
-import rs.ac.bg.etf.pp1.testing.dto.GrammarError;
-import rs.ac.bg.etf.pp1.testing.dto.TestResult;
-import rs.ac.bg.etf.pp1.testing.utils.FileUtils;
+import rs.ac.bg.etf.pp1.dto.Counting;
+import rs.ac.bg.etf.pp1.dto.GrammarError;
+import rs.ac.bg.etf.pp1.dto.TestResult;
 import rs.ac.bg.etf.pp1.util.CodeUtils;
 import rs.ac.bg.etf.pp1.util.Log4JUtils;
 import rs.ac.bg.etf.pp1.util.TabUtils;
+import rs.ac.bg.etf.pp1.utils.FileUtils;
 import rs.etf.pp1.mj.runtime.Code;
 
 /**
@@ -160,7 +160,7 @@ public class ActualTestResults {
 			Symbol s = p.parse(); // pocetak parsiranja
 
 			// Level II
-
+			log.info("\n\n===================== COUNTING =========================\n");
 			Counting testCounts = currentTest.getCounting();
 
 			log.info("Broj deklaracija globalnih promenljivih znakovnog tipa = " + p.globalCharVarCount);

@@ -1,17 +1,18 @@
 package rs.ac.bg.etf.pp1.util;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 
+import rs.ac.bg.etf.pp1.utils.FileUtils;
+
 public class Log4JUtils {
 
 	private static Log4JUtils logs = new Log4JUtils();
-
-	private static String TEST_RESULT_FILE_NAME = "logs/testResult.log";
 
 	public static Log4JUtils instance() {
 
@@ -20,7 +21,16 @@ public class Log4JUtils {
 
 	public URL findLoggerConfigFile() {
 
-		return Thread.currentThread().getContextClassLoader().getResource("log4j.xml");
+		try {
+
+			return FileUtils.getLog4JConfigFile().toURI().toURL();
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+		// Thread.currentThread().getContextClassLoader().getResource("config/log4j.xml");
 	}
 
 	public void prepareLogFile(Logger root) {
@@ -54,7 +64,7 @@ public class Log4JUtils {
 			return;
 		FileAppender fAppender = (FileAppender) appender;
 
-		File logFile = new File(TEST_RESULT_FILE_NAME);
+		File logFile = FileUtils.getCurrentParsedTestFile();
 
 		fAppender.setFile(logFile.getAbsolutePath());
 		fAppender.activateOptions();

@@ -17,9 +17,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import rs.ac.bg.etf.pp1.testing.dto.TestResult;
-import rs.ac.bg.etf.pp1.testing.utils.FileUtils;
-import rs.ac.bg.etf.pp1.testing.utils.TestComparingUtils;
+import rs.ac.bg.etf.pp1.dto.TestResult;
+import rs.ac.bg.etf.pp1.utils.FileUtils;
+import rs.ac.bg.etf.pp1.utils.TestComparingUtils;
 
 /**
  * Created with IntelliJ IDEA. User: Aleksandar Grkajac ga040202d@student.etf.rs, aleksa888@gmail.com Date: 1/21/14 Time: 11:06 PM To change

@@ -1464,7 +1464,6 @@ Factor ::= Designator:d
                RESULT =  parser.newTypeStat(id, idleft);
                
                Code.put(Code.new_);
-               // put2(broj_bajtova);
            :}
            |
            LPAREN Expr:e RPAREN

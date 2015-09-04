@@ -287,7 +287,7 @@ public class TabUtils {
 
 	public static void dump(Logger log) {
 
-		log.info("=====================SYMBOL TABLE DUMP=========================");
+		log.info("\n\n=====================SYMBOL TABLE DUMP=========================\n");
 
 		SymbolTableVisitor stv = new DumpSymbolTableVisitor();
 

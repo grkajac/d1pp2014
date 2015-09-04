@@ -13,6 +13,7 @@ import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
 
 import rs.ac.bg.etf.pp1.util.TabUtils;
+import rs.ac.bg.etf.pp1.utils.FileUtils;
 import rs.etf.pp1.mj.runtime.Code;
 
 /**
@@ -63,6 +64,8 @@ public class SingleTesting implements Testing {
 					Symbol s = p.parse(); // pocetak parsiranja
 
 					// Level II
+					log.info("\n\n===================== COUNTING =========================\n");
+
 					log.info("Broj deklaracija globalnih promenljivih znakovnog tipa = " + p.globalCharVarCount);
 					log.info("Broj deklaracija globalnih nizova = " + p.globalArraysCount);
 					log.info("Broj definicija funkcija u glavnom programu = " + p.globalFunctionsCount);
@@ -85,8 +88,8 @@ public class SingleTesting implements Testing {
 
 					if (sourceCode.getName().matches("test\\d{3}\\.mj") && !Code.greska) {
 
-						File codeGenFile = new File(ActualTestResults.GENERATED_CODE_TEST_PATH + "/" + sourceCode.getName() + ".obj");
-
+						File codeGenFile = FileUtils.createGeneratedCodeFile(sourceCode.getName() + ".obj");
+						
 						Code.write(new FileOutputStream(codeGenFile));
 
 						log.info("Generisanje .mj.obj fajla USPESNO zavrseno :)");
